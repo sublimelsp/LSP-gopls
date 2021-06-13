@@ -3,7 +3,7 @@
   "command": [
     "gopls"
   ],
-  "selector": "source.go",
+  "selector": "source.go | source.gomod",
   // "initializationOptions": {
   //   "experimentalWorkspaceModule": false
   // },
@@ -22,7 +22,7 @@
     // Example Usage:
     // ```json5
     // ...
-    // "analyses": {
+    // "gopls.analyses": {
     //   "unreachable": false, // Disable the unreachable analyzer.
     //   "unusedparams": true  // Enable the unusedparams analyzer.
     // }
@@ -45,7 +45,7 @@
     // ```json5
     // "gopls": {
     // ...
-    //   "codelens": {
+    //   "gopls.codelens": {
     //     "generate": false,  // Don't show the `go generate` lens.
     //     "gc_details": true  // Show a code lens toggling the display of gc's choices.
     //   }
@@ -148,9 +148,7 @@
     // Example Usage:
     // ```json5
     // "gopls": {
-    // ...
-    //   "symbolStyle": "dynamic",
-    // ...
+    //    "gopls.symbolStyle": "dynamic",
     // }
     // ```
     // possible values: Dynamic, Full, Package

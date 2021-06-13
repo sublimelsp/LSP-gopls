@@ -541,7 +541,7 @@
               "properties": {
                 "LSP": {
                   "properties": {
-                    "LSP-gopls": {
+                    "gopls": {
                       "$ref": "sublime://settings/LSP-gopls#/definitions/PluginConfig"
                     }
                   }

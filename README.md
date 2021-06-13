@@ -9,6 +9,10 @@ Uses [Go Language Server][gopls-repo] to provide validation, formatting and othe
 * Install [LSP][lsp-repo] and `LSP-gopls` from Package Control.
 * Restart Sublime.
 
+#### Go Mod Support
+
+To get proper support for Go.mod files and codelenses. It is recommended you install [Sublime Gomod][sublime-gomod] package for syntax highlighing and scoping.
+
 ### Configuration
 
 Open configuration file using command palette with `Preferences: LSP-gopls Settings` command or opening it from the Sublime menu (`Preferences > Package Settings > LSP > Servers > LSP-gopls`).
@@ -164,7 +168,7 @@ Default: `""`
 
 codelenses overrides the enabled/disabled state of code lenses. See the
 "Code Lenses" section of the
-[Settings page][gopls-setting]
+[Settings page][gopls-settings]
 for the list of supported lenses.
 
 Example Usage:
@@ -433,7 +437,8 @@ Default: `false`
 
 
 [lsp-repo]: https://packagecontrol.io/packages/LSP
-[PackageDev]: https://packagecontrol.io/packages/PackageDev
+[packagedev-repo]: https://packagecontrol.io/packages/PackageDev
 [gopls-repo]: https://github.com/golang/tools/blob/master/gopls/README.md
-[gopls-setting]: https://github.com/golang/tools/blob/master/gopls/doc/settings.md
+[gopls-settings]: https://github.com/golang/tools/blob/master/gopls/doc/settings.md
 [gopls-analyzers]: https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md
+[Sublime Gomod]: https://github.com/mitranim/sublime-gomod
