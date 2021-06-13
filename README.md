@@ -11,7 +11,7 @@ Uses [Go Language Server][gopls-repo] to provide validation, formatting and othe
 
 #### Go Mod Support
 
-To get proper support for Go.mod files and codelenses. It is recommended you install [Sublime Gomod][sublime-gomod] package for syntax highlighing and scoping.
+To get proper support for Go.mod files and codelenses it is recommended you install the [Sublime Gomod][sublime-gomod] package for syntax highlighting and scoping.
 
 ### Configuration
 
