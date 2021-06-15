@@ -19,15 +19,6 @@
     // A map of the names of analysis passes that should be enabled/disabled.
     // A full list of analyzers that gopls uses can be found
     // [here](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).
-    // Example Usage:
-    // ```json5
-    // ...
-    // "gopls.analyses": {
-    //   "unreachable": false, // Disable the unreachable analyzer.
-    //   "unusedparams": true  // Enable the unusedparams analyzer.
-    // }
-    // ...
-    // ```
     "gopls.analyses": {},
     // (Experimental) annotations specifies the various kinds of optimization diagnostics
     // that should be reported by the gc_details command.
@@ -41,17 +32,6 @@
     // "Code Lenses" section of the
     // [Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md)
     // for the list of supported lenses.
-    // Example Usage:
-    // ```json5
-    // "gopls": {
-    // ...
-    //   "gopls.codelens": {
-    //     "generate": false,  // Don't show the `go generate` lens.
-    //     "gc_details": true  // Show a code lens toggling the display of gc's choices.
-    //   }
-    // ...
-    // }
-    // ```
     "gopls.codelenses": {},
     // (For Debugging) completionBudget is the soft latency goal for completion requests. Most
     // requests finish in a couple milliseconds, but in some cases deep
@@ -145,12 +125,6 @@
     // possible values: CaseInsensitive, CaseSensitive, Fuzzy
     "gopls.symbolMatcher": "Fuzzy",
     // (Advanced) symbolStyle controls how symbols are qualified in symbol responses.
-    // Example Usage:
-    // ```json5
-    // "gopls": {
-    //    "gopls.symbolStyle": "dynamic",
-    // }
-    // ```
     // possible values: Dynamic, Full, Package
     "gopls.symbolStyle": "Dynamic",
     // placeholders enables placeholders for function parameters or struct

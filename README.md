@@ -441,4 +441,4 @@ Default: `false`
 [gopls-repo]: https://github.com/golang/tools/blob/master/gopls/README.md
 [gopls-settings]: https://github.com/golang/tools/blob/master/gopls/doc/settings.md
 [gopls-analyzers]: https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md
-[Sublime Gomod]: https://github.com/mitranim/sublime-gomod
+[Sublime Gomod]: https://packagecontrol.io/packages/Gomod
