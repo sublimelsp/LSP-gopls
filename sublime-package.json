@@ -10,30 +10,6 @@
           "definitions": {
             "PluginConfig": {
               "properties": {
-                "command": {
-                  "type": "array",
-                  "markdownDescription": "The schema URI protocols handled by the server. Requests for all other protocols are sent to the client.\n\nBy default server handles the `https`, `http` and `file` protocols itself.\n\n- `http`, `https`: Loaded using NodeJS's HTTP support. Proxies can be configured through the settings.\n - `file`: Loaded using NodeJS's `fs` support.",
-                  "default": [
-                    "https",
-                    "http",
-                    "file"
-                  ],
-                  "items": {
-                    "anyOf": [
-                      {
-                        "enum": [
-                          "file",
-                          "http",
-                          "https"
-                        ]
-                      },
-                      {
-                        "type": "string"
-                      }
-                    ],
-                  },
-                  "uniqueItems": true,
-                },
                 "initializationOptions": {
                   "additionalProperties": false,
                   "type": "object",
