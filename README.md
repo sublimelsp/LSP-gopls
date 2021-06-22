@@ -4,6 +4,16 @@ Golang support for Sublime's LSP plugin.
 
 Uses [Go Language Server][gopls-repo] to provide validation, formatting and other features for JSON files. See linked repository for more information.
 
+### Prerequisites
+
+* Gopls (Go Language Server) must be installed and configured in your `PATH`
+
+#### How-to
+
+1. Ensure `go` (golang) is installed and configured in your `PATH` See [Golang Installation](golang-installation)
+1. Install `gopls` via `GO111MODULE=on go get golang.org/x/tools/gopls@latest`
+1. Add `gopls` to your `PATH` if it is not already present
+
 ### Installation
 
 * Install [LSP][lsp-repo] and `LSP-gopls` from Package Control.
@@ -441,4 +451,5 @@ Default: `false`
 [gopls-repo]: https://github.com/golang/tools/blob/master/gopls/README.md
 [gopls-settings]: https://github.com/golang/tools/blob/master/gopls/doc/settings.md
 [gopls-analyzers]: https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md
-[Sublime Gomod]: https://packagecontrol.io/packages/Gomod
+[sublime-gomod]: https://packagecontrol.io/packages/Gomod
+[golang-installation]: https://golang.org/doc/install
