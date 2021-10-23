@@ -27,8 +27,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def _is_go_installed(cls) -> bool:
-        go_binary = get_setting('go.binary', '')
-        return _is_binary_available(go_binary)
+        return _is_binary_available('go')
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
@@ -49,7 +48,7 @@ class Gopls(AbstractPlugin):
 
             os.makedirs(cls.basedir(), exist_ok=True)
 
-            go_binary = get_setting('go.binary', '')
+            go_binary = str(which('go'))
             process = subprocess.Popen([go_binary, 'install', "golang.org/x/tools/gopls@latest"],
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE,
