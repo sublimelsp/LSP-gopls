@@ -1,7 +1,7 @@
 // Packages/User/LSP-gopls.sublime-settings
 {
   "command": [
-    "gopls"
+    "${storage_path}/LSP-gopls/bin/gopls"
   ],
   "selector": "source.go | source.gomod",
   "settings": {

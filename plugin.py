@@ -9,6 +9,14 @@ from shutil import which, rmtree
 import subprocess
 import os
 
+'''
+Current version of gopls that the plugin installs
+Review gopls settings when updating TAG to see if
+new settings exist
+'''
+TAG = "v0.7.3"
+GOPLS_BASE_URL = 'golang.org/x/tools/gopls@{tag}'
+
 
 class Gopls(AbstractPlugin):
 
@@ -21,8 +29,21 @@ class Gopls(AbstractPlugin):
         return os.path.join(cls.storage_path(), __package__)
 
     @classmethod
+    def server_version(cls) -> str:
+        return TAG
+
+    @classmethod
+    def current_server_version(cls) -> str:
+        try:
+            with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
+                return fp.read()
+        except OSError as ex:
+            raise ex
+
+    @classmethod
     def _is_gopls_installed(cls) -> bool:
-        gopls_binary = get_setting('command', [os.path.join(cls.basedir(), 'bin', 'gopls')])
+        gopls_binary = get_setting(
+            'command', [os.path.join(cls.basedir(), 'bin', 'gopls')])
         return _is_binary_available(gopls_binary[0])
 
     @classmethod
@@ -32,7 +53,7 @@ class Gopls(AbstractPlugin):
     @classmethod
     def needs_update_or_installation(cls) -> bool:
         try:
-            return not cls._is_gopls_installed()
+            return not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())
         except OSError:
             return True
 
@@ -40,26 +61,28 @@ class Gopls(AbstractPlugin):
     def install_or_update(cls) -> None:
         try:
             if not cls._is_go_installed():
-                sublime.error_message('golang not installed')
-                return
-
-            if os.path.isdir(cls.basedir()):
-                rmtree(cls.basedir())
+                raise ValueError('go binary not found in $PATH')
 
             os.makedirs(cls.basedir(), exist_ok=True)
 
             go_binary = str(which('go'))
-            process = subprocess.Popen([go_binary, 'install', "golang.org/x/tools/gopls@latest"],
+            process = subprocess.Popen([go_binary, 'install', GOPLS_BASE_URL.format(tag=TAG)],
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE,
                                        env={
+                                       'GO111MODULE': 'on',
                                        'GOPATH': cls.basedir(),
                                        'GOBIN': os.path.join(cls.basedir(), 'bin'),
                                        'GOCACHE': os.path.join(cls.basedir(), 'go-build')
                                        })
             _, stderr = process.communicate()
-            if stderr:
-                sublime.error_message(str(stderr))
+            if process.returncode != 0:
+                raise ValueError(
+                    'error occured during gopls installation', 'returncode', process.returncode)
+
+            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+                fp.write(cls.server_version())
+
         except Exception:
             rmtree(cls.basedir(), ignore_errors=True)
             raise
