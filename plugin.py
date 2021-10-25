@@ -3,7 +3,7 @@
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any, Optional,
+from LSP.plugin.core.typing import Any, Optional
 
 from shutil import which
 import subprocess
