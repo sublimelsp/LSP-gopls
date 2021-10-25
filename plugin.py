@@ -14,8 +14,8 @@ Current version of gopls that the plugin installs
 Review gopls settings when updating TAG to see if
 new settings exist
 '''
-TAG = "v0.7.3"
-GOPLS_BASE_URL = 'golang.org/x/tools/gopls@{tag}'
+TAG = "0.7.3"
+GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
 
 class Gopls(AbstractPlugin):
