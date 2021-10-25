@@ -5,7 +5,7 @@ import sublime
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
 from LSP.plugin.core.typing import Any
 
-from shutil import which, rmtree
+from shutil import which
 import subprocess
 import os
 
@@ -78,14 +78,13 @@ class Gopls(AbstractPlugin):
             _, stderr = process.communicate()
             if process.returncode != 0:
                 raise ValueError(
-                    'error occured during gopls installation', 'returncode', process.returncode)
+                    'go installation error', stderr, 'returncode', process.returncode)
 
             with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
                 fp.write(cls.server_version())
 
-        except Exception:
-            rmtree(cls.basedir(), ignore_errors=True)
-            raise
+        except Exception as ex:
+            raise ValueError(ex)
 
 
 def _is_binary_available(path) -> bool:
