@@ -56,32 +56,28 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def install_or_update(cls) -> None:
-        try:
-            if not cls._is_go_installed():
-                raise ValueError('go binary not found in $PATH')
+        if not cls._is_go_installed():
+            raise ValueError('go binary not found in $PATH')
 
-            os.makedirs(cls.basedir(), exist_ok=True)
+        os.makedirs(cls.basedir(), exist_ok=True)
 
-            go_binary = str(which('go'))
-            process = subprocess.Popen([go_binary, 'install', GOPLS_BASE_URL.format(tag=TAG)],
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.PIPE,
-                                       env={
-                                       'GO111MODULE': 'on',
-                                       'GOPATH': cls.basedir(),
-                                       'GOBIN': os.path.join(cls.basedir(), 'bin'),
-                                       'GOCACHE': os.path.join(cls.basedir(), 'go-build')
-                                       })
-            _, stderr = process.communicate()
-            if process.returncode != 0:
-                raise ValueError(
-                    'go installation error', stderr, 'returncode', process.returncode)
+        go_binary = str(which('go'))
+        process = subprocess.Popen([go_binary, 'install', GOPLS_BASE_URL.format(tag=TAG)],
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   env={
+                                   'GO111MODULE': 'on',
+                                   'GOPATH': cls.basedir(),
+                                   'GOBIN': os.path.join(cls.basedir(), 'bin'),
+                                   'GOCACHE': os.path.join(cls.basedir(), 'go-build')
+                                   })
+        _, stderr = process.communicate()
+        if process.returncode != 0:
+            raise ValueError(
+                'go installation error', stderr, 'returncode', process.returncode)
 
-            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
-                fp.write(cls.server_version())
-
-        except Exception as ex:
-            raise ex
+        with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+            fp.write(cls.server_version())
 
 
 def _is_binary_available(path) -> bool:
