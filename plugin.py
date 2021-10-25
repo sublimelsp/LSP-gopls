@@ -3,7 +3,7 @@
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any
+from LSP.plugin.core.typing import Any, Optional,
 
 from shutil import which
 import subprocess
@@ -33,12 +33,12 @@ class Gopls(AbstractPlugin):
         return TAG
 
     @classmethod
-    def current_server_version(cls) -> str:
+    def current_server_version(cls) -> Optional[str]:
         try:
             with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
                 return fp.read()
-        except OSError as ex:
-            raise ex
+        except:
+            return None
 
     @classmethod
     def _is_gopls_installed(cls) -> bool:
@@ -84,7 +84,7 @@ class Gopls(AbstractPlugin):
                 fp.write(cls.server_version())
 
         except Exception as ex:
-            raise ValueError(ex)
+            raise ex
 
 
 def _is_binary_available(path) -> bool:
