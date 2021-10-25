@@ -52,10 +52,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
-        try:
-            return not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())
-        except OSError:
-            return True
+        return not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())
 
     @classmethod
     def install_or_update(cls) -> None:
