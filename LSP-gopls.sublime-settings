@@ -58,12 +58,12 @@
     // found, gopls will check if there is exactly one child directory containing
     // a go.mod file, narrowing the scope to that directory if it exists.
     "gopls.expandWorkspaceToModule": true,
-    // (Experimental) experimentalDiagnosticsDelay controls the amount of time that gopls waits
+    // diagnosticsDelay controls the amount of time that gopls waits
     // after the most recent file modification before computing deep diagnostics.
     // Simple diagnostics (parsing and type-checking) are always run immediately
     // on recently modified packages.
     // This option must be set to a valid duration string, for example `"250ms"`.
-    "gopls.experimentalDiagnosticsDelay": "250ms",
+    "gopls.diagnosticsDelay": "250ms",
     // (Experimental) experimentalPackageCacheKey controls whether to use a coarser cache key
     // for package type information to increase cache hits. This setting removes
     // the user's environment, build flags, and working directory from the cache
