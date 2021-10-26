@@ -2,17 +2,11 @@
 
 Golang support for Sublime's LSP plugin.
 
-Uses [Go Language Server][gopls-repo] to provide validation, formatting and other features for JSON files. See linked repository for more information.
+Uses [Go Language Server][gopls-repo] to provide validation, formatting and other features for Go & Go Mod files. See linked repository for more information.
 
 ### Prerequisites
 
 * Gopls (Go Language Server) must be installed and configured in your `PATH`
-
-#### How-to
-
-1. Ensure `go` (golang) is installed and configured in your `PATH` See [Golang Installation](golang-installation)
-1. Install `gopls` via `GO111MODULE=on go get golang.org/x/tools/gopls@latest`
-1. Add `gopls` to your `PATH` if it is not already present
 
 ### Installation
 
@@ -26,17 +20,6 @@ To get proper support for Go.mod files and codelenses it is recommended you inst
 ### Configuration
 
 Open configuration file using command palette with `Preferences: LSP-gopls Settings` command or opening it from the Sublime menu (`Preferences > Package Settings > LSP > Servers > LSP-gopls`).
-
-### For users of PackageDev
-
-The [PackageDev][packagedev-repo] package implements features that provide completions and tooltips when editing the Sublime settings files, which overlaps and conflicts with functionality provided by this package. To take advantage of the strict schemas that this package provides, disable corresponding functionality in `PackageDev` by opening `Preferences: PackageDev Settings` from the Command Palette and set the following settings on the right side:
-
-```json
-{
-  "settings.auto_complete": false,
-  "settings.tooltip": false
-}
-```
 
 ## Settings
 
