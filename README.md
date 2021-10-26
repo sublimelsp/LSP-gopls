@@ -6,7 +6,7 @@ Uses [Go Language Server][gopls-repo] to provide validation, formatting and othe
 
 ### Prerequisites
 
-* Gopls (Go Language Server) must be installed and configured in your `PATH`
+* Go (Golang) must be installed and configured in your `PATH`
 
 ### Installation
 
