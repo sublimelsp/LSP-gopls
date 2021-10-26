@@ -397,9 +397,9 @@
                       },
                       "type": "object"
                     },
-                    "gopls.experimentalDiagnosticsDelay": {
+                    "gopls.diagnosticsDelay": {
                       "default": "250ms",
-                      "markdownDescription": "(Experimental) experimentalDiagnosticsDelay controls the amount of time that gopls waits\nafter the most recent file modification before computing deep diagnostics.\nSimple diagnostics (parsing and type-checking) are always run immediately\non recently modified packages.\n\nThis option must be set to a valid duration string, for example `\"250ms\"`.\n",
+                      "markdownDescription": "diagnosticsDelay controls the amount of time that gopls waits\nafter the most recent file modification before computing deep diagnostics.\nSimple diagnostics (parsing and type-checking) are always run immediately\non recently modified packages.\n\nThis option must be set to a valid duration string, for example `\"250ms\"`.\n",
                       "type": "string"
                     },
                     "gopls.staticcheck": {
