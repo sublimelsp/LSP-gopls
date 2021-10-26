@@ -317,11 +317,10 @@ that should be reported by the gc_details command.
 | `escape` | `"escape"` controls diagnostics about escape choices. <br/> <br/> Default: `true` |
 | `inline` | `"inline"` controls diagnostics about inlining choices. <br/> <br/> Default: `true` |
 | `nil` | `"nil"` controls nil checks. <br/> <br/> Default: `true` |
-### `gopls.experimentalDiagnosticsDelay`
 
-**Experimental**
+### `gopls.diagnosticsDelay`
 
-experimentalDiagnosticsDelay controls the amount of time that gopls waits
+diagnosticsDelay controls the amount of time that gopls waits
 after the most recent file modification before computing deep diagnostics.
 Simple diagnostics (parsing and type-checking) are always run immediately
 on recently modified packages.
