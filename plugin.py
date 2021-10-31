@@ -104,10 +104,16 @@ class Gopls(AbstractPlugin):
 
 
 def run_go_command(go: str, sub_command: str = 'install', env_vars: dict = {}) -> Tuple[str, str, int]:
+    startupinfo = None
+    if sublime.platform() == 'Windows':
+        startupinfo = subprocess.STARTUPINFO()  # type: ignore
+        startupinfo.dwFlags |= subprocess.SW_HIDE | subprocess.STARTF_USESHOWWINDOW  # type: ignore
+
     process = subprocess.Popen([go, sub_command, GOPLS_BASE_URL.format(tag=TAG)],
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
-                               env=env_vars)
+                               env=env_vars,
+                               startupinfo=startupinfo)
     stdout, stderr = process.communicate()
     return str(stdout), str(stderr), process.returncode,
 
