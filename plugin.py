@@ -1,5 +1,6 @@
 # Packages/LSP-gopls/plugin.py
 
+from typing import Tuple
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
@@ -8,6 +9,7 @@ from LSP.plugin.core.typing import Any, Optional
 from shutil import which
 import subprocess
 import os
+import re
 
 '''
 Current version of gopls that the plugin installs
@@ -16,6 +18,8 @@ new settings exist
 '''
 TAG = "0.7.3"
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
+
+RE_VER = re.compile(r"go(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)")
 
 
 class Gopls(AbstractPlugin):
@@ -51,6 +55,31 @@ class Gopls(AbstractPlugin):
         return _is_binary_available('go')
 
     @classmethod
+    def _get_go_version(cls) -> Tuple[int, int, int]:
+        go_binary = str(which('go'))
+        stdout, stderr, return_code = run_go_command(go=go_binary, sub_command='version', env_vars=cls._set_env_vars())
+        if return_code != 0:
+            raise ValueError(
+                'go version error', stderr, 'returncode', return_code)
+
+        if stdout == '':
+            return (0, 0, 0)
+
+        matches = RE_VER.search(stdout)
+        if matches is None:
+            return (0, 0, 0)
+        return (to_int(matches.group(1)), to_int(matches.group(2)), to_int(matches.group(3)))
+
+    @classmethod
+    def _set_env_vars(cls) -> dict:
+        env_vars = dict(os.environ)
+        env_vars['GO111MODULE'] = 'on'
+        env_vars['GOPATH'] = cls.basedir()
+        env_vars['GOBIN'] = os.path.join(cls.basedir(), 'bin')
+        env_vars['GOCACHE'] = os.path.join(cls.basedir(), 'go-build')
+        return env_vars
+
+    @classmethod
     def needs_update_or_installation(cls) -> bool:
         return not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())
 
@@ -62,23 +91,30 @@ class Gopls(AbstractPlugin):
         os.makedirs(cls.basedir(), exist_ok=True)
 
         go_binary = str(which('go'))
-        process = subprocess.Popen([go_binary, 'install', GOPLS_BASE_URL.format(tag=TAG)],
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   env={
-                                   'GO111MODULE': 'on',
-                                   'GOPATH': cls.basedir(),
-                                   'GOBIN': os.path.join(cls.basedir(), 'bin'),
-                                   'GOCACHE': os.path.join(cls.basedir(), 'go-build')
-                                   })
-        _, stderr = process.communicate()
-        if process.returncode != 0:
+        go_version = cls._get_go_version()
+        go_sub_command = 'get' if go_version[1] < 16 else 'install'
+        stdout, stderr, return_code = run_go_command(
+            go=go_binary, sub_command=go_sub_command, env_vars=cls._set_env_vars())
+        if return_code != 0:
             raise ValueError(
-                'go installation error', stderr, 'returncode', process.returncode)
+                'go installation error', stderr, 'returncode', return_code)
 
         with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
             fp.write(cls.server_version())
 
+
+def run_go_command(go: str, sub_command: str = 'install', env_vars: dict = {}) -> Tuple[str, str, int]:
+    process = subprocess.Popen([go, sub_command, GOPLS_BASE_URL.format(tag=TAG)],
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               env=env_vars)
+    stdout, stderr = process.communicate()
+    return str(stdout), str(stderr), process.returncode,
+
+def to_int(value: Any[str, None] = '') -> int:
+    if value is None:
+        return 0
+    return int(value)
 
 def _is_binary_available(path) -> bool:
     return bool(which(path))
