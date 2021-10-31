@@ -19,7 +19,7 @@ new settings exist
 TAG = "0.7.3"
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
-RE_VER = re.compile(r"go(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)")
+RE_VER = re.compile(r"go(\d+)\.(\d+)\.(\d+)")
 
 
 class Gopls(AbstractPlugin):
