@@ -103,7 +103,9 @@ class Gopls(AbstractPlugin):
             fp.write(cls.server_version())
 
 
-def run_go_command(go: str, sub_command: str = 'install', url: Any[str, None] = None, env_vars: Any[dict, None] = None) -> Tuple[str, str, int]:
+def run_go_command(
+    go: str, sub_command: str = 'install', url: Optional[str] = None, env_vars: Optional[dict] = None
+) -> Tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == 'Windows':
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
