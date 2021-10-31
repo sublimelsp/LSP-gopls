@@ -7,6 +7,7 @@ from LSP.plugin.core.typing import Any, Optional, Tuple
 
 from shutil import which
 import subprocess
+import tempfile
 import os
 import re
 
@@ -102,7 +103,7 @@ class Gopls(AbstractPlugin):
             fp.write(cls.server_version())
 
 
-def run_go_command(go: str, sub_command: str = 'install', url: Any[str, None] = None, env_vars: dict = {}) -> Tuple[str, str, int]:
+def run_go_command(go: str, sub_command: str = 'install', url: Any[str, None] = None, env_vars: Any[dict, None] = None) -> Tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == 'Windows':
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
@@ -112,12 +113,17 @@ def run_go_command(go: str, sub_command: str = 'install', url: Any[str, None] = 
     if url is not None:
         cmd.append(url)
 
-    process = subprocess.Popen(cmd,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               env=env_vars,
-                               startupinfo=startupinfo)
-    stdout, stderr = process.communicate()
+    with tempfile.TemporaryDirectory() as tempdir:
+        if env_vars is None:
+            env_vars = {}
+
+        env_vars['GOTMPDIR'] = tempdir
+        process = subprocess.Popen(cmd,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   env=env_vars,
+                                   startupinfo=startupinfo)
+        stdout, stderr = process.communicate()
     return str(stdout), str(stderr), process.returncode,
 
 def to_int(value: Any[str, None] = '') -> int:
