@@ -94,7 +94,7 @@ class Gopls(AbstractPlugin):
         go_version = cls._get_go_version()
         go_sub_command = 'get' if go_version[1] < 16 else 'install'
         stdout, stderr, return_code = run_go_command(
-            go=go_binary, sub_command=go_sub_command, env_vars=cls._set_env_vars())
+            go=go_binary, sub_command=go_sub_command, url=GOPLS_BASE_URL.format(tag=TAG), env_vars=cls._set_env_vars())
         if return_code != 0:
             raise ValueError(
                 'go installation error', stderr, 'returncode', return_code)
@@ -103,13 +103,17 @@ class Gopls(AbstractPlugin):
             fp.write(cls.server_version())
 
 
-def run_go_command(go: str, sub_command: str = 'install', env_vars: dict = {}) -> Tuple[str, str, int]:
+def run_go_command(go: str, sub_command: str = 'install', url: Any[str, None] = None, env_vars: dict = {}) -> Tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == 'Windows':
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
         startupinfo.dwFlags |= subprocess.SW_HIDE | subprocess.STARTF_USESHOWWINDOW  # type: ignore
 
-    process = subprocess.Popen([go, sub_command, GOPLS_BASE_URL.format(tag=TAG)],
+    cmd = [go, sub_command]
+    if url is not None:
+        cmd.append(url)
+
+    process = subprocess.Popen(cmd,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE,
                                env=env_vars,
