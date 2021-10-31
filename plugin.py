@@ -1,10 +1,9 @@
 # Packages/LSP-gopls/plugin.py
 
-from typing import Tuple
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any, Optional
+from LSP.plugin.core.typing import Any, Optional, Tuple
 
 from shutil import which
 import subprocess
