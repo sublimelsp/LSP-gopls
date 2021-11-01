@@ -56,8 +56,9 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def _get_go_version(cls) -> Tuple[int, int, int]:
-        stdout, stderr, return_code = run_go_command(sub_command='version', env_vars=cls._set_env_vars()
-        )
+        stdout, stderr, return_code = run_go_command(
+            sub_command='version',
+            env_vars=cls._set_env_vars())
         if return_code != 0:
             raise ValueError(
                 'go version error', stderr, 'returncode', return_code)
@@ -98,7 +99,7 @@ class Gopls(AbstractPlugin):
 
         go_version = cls._get_go_version()
         go_sub_command = 'get' if go_version < (1, 16, 0) else 'install'
-        stdout, stderr, return_code = run_go_command(
+        _, stderr, return_code = run_go_command(
             sub_command=go_sub_command,
             url=GOPLS_BASE_URL.format(tag=TAG),
             env_vars=cls._set_env_vars(),
@@ -112,9 +113,9 @@ class Gopls(AbstractPlugin):
 
 
 def run_go_command(
+    env_vars: dict,
     sub_command: str = 'install',
     url: Optional[str] = None,
-    env_vars: Optional[dict] = None,
 ) -> Tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == 'windows':
@@ -126,9 +127,6 @@ def run_go_command(
         cmd.append(url)
 
     with tempfile.TemporaryDirectory() as tempdir:
-        if env_vars is None:
-            env_vars = {}
-
         env_vars['GOTMPDIR'] = tempdir
         process = subprocess.Popen(
             cmd,
@@ -140,8 +138,8 @@ def run_go_command(
         )
         stdout, stderr = process.communicate()
     return (
-        str(stdout),
-        str(stderr),
+        stdout,
+        stderr,
         process.returncode,
     )
 
