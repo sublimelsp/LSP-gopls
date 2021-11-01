@@ -16,17 +16,16 @@ Current version of gopls that the plugin installs
 Review gopls settings when updating TAG to see if
 new settings exist
 '''
-TAG = "0.7.3"
+TAG = '0.7.3'
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
-RE_VER = re.compile(r"go(\d+)\.(\d+)\.(\d+)")
+RE_VER = re.compile(r'go(\d+)\.(\d+)\.(\d+)')
 
 
 class Gopls(AbstractPlugin):
-
     @classmethod
     def name(cls):
-        return "gopls"
+        return 'gopls'
 
     @classmethod
     def basedir(cls) -> str:
@@ -39,7 +38,7 @@ class Gopls(AbstractPlugin):
     @classmethod
     def current_server_version(cls) -> Optional[str]:
         try:
-            with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
+            with open(os.path.join(cls.basedir(), 'VERSION'), 'r') as fp:
                 return fp.read()
         except:
             return None
@@ -47,7 +46,8 @@ class Gopls(AbstractPlugin):
     @classmethod
     def _is_gopls_installed(cls) -> bool:
         gopls_binary = get_setting(
-            'command', [os.path.join(cls.basedir(), 'bin', 'gopls')])
+            'command', [os.path.join(cls.basedir(), 'bin', 'gopls')]
+        )
         return _is_binary_available(gopls_binary[0])
 
     @classmethod
@@ -56,8 +56,8 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def _get_go_version(cls) -> Tuple[int, int, int]:
-        go_binary = str(which('go'))
-        stdout, stderr, return_code = run_go_command(go=go_binary, sub_command='version', env_vars=cls._set_env_vars())
+        stdout, stderr, return_code = run_go_command(sub_command='version', env_vars=cls._set_env_vars()
+        )
         if return_code != 0:
             raise ValueError(
                 'go version error', stderr, 'returncode', return_code)
@@ -68,7 +68,11 @@ class Gopls(AbstractPlugin):
         matches = RE_VER.search(stdout)
         if matches is None:
             return (0, 0, 0)
-        return (to_int(matches.group(1)), to_int(matches.group(2)), to_int(matches.group(3)))
+        return (
+            to_int(matches.group(1)),
+            to_int(matches.group(2)),
+            to_int(matches.group(3)),
+        )
 
     @classmethod
     def _set_env_vars(cls) -> dict:
@@ -81,7 +85,9 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
-        return not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())
+        return not cls._is_gopls_installed() or (
+            cls.server_version() != cls.current_server_version()
+        )
 
     @classmethod
     def install_or_update(cls) -> None:
@@ -92,26 +98,35 @@ class Gopls(AbstractPlugin):
 
         go_binary = str(which('go'))
         go_version = cls._get_go_version()
-        go_sub_command = 'get' if go_version[1] < 16 else 'install'
+        go_sub_command = (
+            'get' if (go_version[0] <= 1 and go_version[1] < 16) else 'install'
+        )
         stdout, stderr, return_code = run_go_command(
-            go=go_binary, sub_command=go_sub_command, url=GOPLS_BASE_URL.format(tag=TAG), env_vars=cls._set_env_vars())
+            go=go_binary,
+            sub_command=go_sub_command,
+            url=GOPLS_BASE_URL.format(tag=TAG),
+            env_vars=cls._set_env_vars(),
+        )
         if return_code != 0:
             raise ValueError(
                 'go installation error', stderr, 'returncode', return_code)
 
-        with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+        with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
             fp.write(cls.server_version())
 
 
 def run_go_command(
-    go: str, sub_command: str = 'install', url: Optional[str] = None, env_vars: Optional[dict] = None
+    sub_command: str = 'install',
+    url: Optional[str] = None,
+    env_vars: Optional[dict] = None,
 ) -> Tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == 'Windows':
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
         startupinfo.dwFlags |= subprocess.SW_HIDE | subprocess.STARTF_USESHOWWINDOW  # type: ignore
 
-    cmd = [go, sub_command]
+    go_binary = str(which('go'))
+    cmd = [go_binary, sub_command]
     if url is not None:
         cmd.append(url)
 
@@ -120,27 +135,35 @@ def run_go_command(
             env_vars = {}
 
         env_vars['GOTMPDIR'] = tempdir
-        process = subprocess.Popen(cmd,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   env=env_vars,
-                                   startupinfo=startupinfo)
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env_vars,
+            universal_newlines=True,
+            startupinfo=startupinfo,
+        )
         stdout, stderr = process.communicate()
-    return str(stdout), str(stderr), process.returncode,
+    return (
+        str(stdout),
+        str(stderr),
+        process.returncode,
+    )
 
-def to_int(value: Any[str, None] = '') -> int:
+
+def to_int(value: Optional[str] = '') -> int:
     if value is None:
         return 0
     return int(value)
+
 
 def _is_binary_available(path) -> bool:
     return bool(which(path))
 
 
 def get_setting(key: str, default=None) -> Any:
-    settings = sublime.load_settings(
-        'LSP-gopls.sublime-settings').get("settings", {})
-    return settings.get(key, default)
+    s = sublime.load_settings('LSP-gopls.sublime-settings').get('settings', {})
+    return s.get(key, default)
 
 
 def plugin_loaded():
