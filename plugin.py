@@ -96,13 +96,9 @@ class Gopls(AbstractPlugin):
 
         os.makedirs(cls.basedir(), exist_ok=True)
 
-        go_binary = str(which('go'))
         go_version = cls._get_go_version()
-        go_sub_command = (
-            'get' if (go_version[0] <= 1 and go_version[1] < 16) else 'install'
-        )
+        go_sub_command = 'get' if go_version < (1, 16, 0) else 'install'
         stdout, stderr, return_code = run_go_command(
-            go=go_binary,
             sub_command=go_sub_command,
             url=GOPLS_BASE_URL.format(tag=TAG),
             env_vars=cls._set_env_vars(),
@@ -121,12 +117,11 @@ def run_go_command(
     env_vars: Optional[dict] = None,
 ) -> Tuple[str, str, int]:
     startupinfo = None
-    if sublime.platform() == 'Windows':
+    if sublime.platform() == 'windows':
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
         startupinfo.dwFlags |= subprocess.SW_HIDE | subprocess.STARTF_USESHOWWINDOW  # type: ignore
 
-    go_binary = str(which('go'))
-    cmd = [go_binary, sub_command]
+    cmd = ['go', sub_command]
     if url is not None:
         cmd.append(url)
 
@@ -151,7 +146,7 @@ def run_go_command(
     )
 
 
-def to_int(value: Optional[str] = '') -> int:
+def to_int(value: Optional[str]) -> int:
     if value is None:
         return 0
     return int(value)
