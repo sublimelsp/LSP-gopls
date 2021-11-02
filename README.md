@@ -20,3 +20,13 @@ Open configuration file using command palette with `Preferences: LSP-gopls Setti
 ## Settings
 
 Configure the default Go language server ('gopls'). In most cases, configuring this section is unnecessary. See [the documentation][gopls-settings] for all available settings.
+
+
+[lsp-repo]: https://packagecontrol.io/packages/LSP
+[lsp-gopls]: https://packagecontrol.io/packages/LSP-gopls
+[packagedev-repo]: https://packagecontrol.io/packages/PackageDev
+[gopls-repo]: https://github.com/golang/tools/blob/master/gopls/README.md
+[gopls-settings]: https://github.com/golang/tools/blob/master/gopls/doc/settings.md
+[gopls-analyzers]: https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md
+[sublime-gomod]: https://packagecontrol.io/packages/Gomod
+[golang-installation]: https://golang.org/doc/install
