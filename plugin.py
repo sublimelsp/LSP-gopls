@@ -45,10 +45,14 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def _is_gopls_installed(cls) -> bool:
-        gopls_binary = get_setting(
-            'command', [os.path.join(cls.basedir(), 'bin', 'gopls')]
+        binary = 'gopls.exe' if sublime.platform() == 'windows' else 'gopls'
+        command = get_setting(
+            'command', [os.path.join(cls.basedir(), 'bin', binary)]
         )
-        return _is_binary_available(gopls_binary[0])
+        gopls_binary = command[0].replace('${storage_path}', cls.storage_path())
+        if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
+            gopls_binary = gopls_binary + '.exe'
+        return _is_binary_available(gopls_binary)
 
     @classmethod
     def _is_go_installed(cls) -> bool:
@@ -132,6 +136,7 @@ def run_go_command(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            cwd=tempdir,
             env=env_vars,
             universal_newlines=True,
             startupinfo=startupinfo,
@@ -155,8 +160,8 @@ def _is_binary_available(path) -> bool:
 
 
 def get_setting(key: str, default=None) -> Any:
-    s = sublime.load_settings('LSP-gopls.sublime-settings').get('settings', {})
-    return s.get(key, default)
+    settings = sublime.load_settings('LSP-gopls.sublime-settings')
+    return settings.get(key, default)
 
 
 def plugin_loaded():
