@@ -136,7 +136,6 @@ def run_go_command(
             cmd,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            cwd=tempdir,
             env=env_vars,
             universal_newlines=True,
             startupinfo=startupinfo,
