@@ -16,7 +16,7 @@ Current version of gopls that the plugin installs
 Review gopls settings when updating TAG to see if
 new settings exist
 '''
-TAG = '0.7.3'
+TAG = '0.7.5'
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
 RE_VER = re.compile(r'go(\d+)\.(\d+)\.(\d+)')
