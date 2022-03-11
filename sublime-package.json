@@ -24,6 +24,11 @@
                 "settings": {
                   "type": "object",
                   "properties": {
+                    "gopls.experimentalUseInvalidMetadata": {
+                      "default": false,
+                      "markdownDescription": "(Experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated\npackage metadata to provide editor features if the go command fails to\nload packages for some reason (like an invalid go.mod file). This will\neventually be the default behavior, and this setting will be removed.\n",
+                      "type": "boolean"
+                    },
                     "gopls.allowImplicitNetworkAccess": {
                       "default": false,
                       "markdownDescription": "(Experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module\ndownloads rather than requiring user action. This option will eventually\nbe removed.\n",
@@ -35,10 +40,13 @@
                       "type": "boolean"
                     },
                     "gopls.buildFlags": {
-                      "markdownDescription": "buildFlags is the set of flags passed on to the build system when invoked.\nIt is applied to queries like `go list`, which is used when discovering files.\nThe most common use is to set `-tags`.\n\nIf unspecified, values of `go.buildFlags, go.buildTags` will be propagated.\n",
+                      "markdownDescription": "buildFlags is the set of flags passed on to the build system when invoked.\nIt is applied to queries like `go list`, which is used when discovering files.\nThe most common use is to set `-tags`.\n",
                       "type": "array"
                     },
                     "gopls.directoryFilters": {
+                      "default": [
+                        "-node_modules"
+                      ],
                       "markdownDescription": "directoryFilters can be used to exclude unwanted directories from the\nworkspace. By default, all directories are included. Filters are an\noperator, `+` to include and `-` to exclude, followed by a path prefix\nrelative to the workspace folder. They are evaluated in order, and\nthe last filter that applies to a path controls whether it is included.\nThe path prefix can be empty, so an initial `-` excludes everything.\n\nExamples:\n\nExclude node_modules: `-node_modules`\n\nInclude only project_a: `-` (exclude everything), `+project_a`\n\nInclude only project_a, but not node_modules inside it: `-`, `+project_a`, `-project_a/node_modules`\n",
                       "type": "array"
                     },
@@ -50,6 +58,11 @@
                       "default": true,
                       "markdownDescription": "(Experimental) expandWorkspaceToModule instructs `gopls` to adjust the scope of the\nworkspace to find the best available module root. `gopls` first looks for\na go.mod file in any parent directory of the workspace folder, expanding\nthe scope to that directory if it exists. If no viable parent directory is\nfound, gopls will check if there is exactly one child directory containing\na go.mod file, narrowing the scope to that directory if it exists.\n",
                       "type": "boolean"
+                    },
+                    "gopls.templateExtensions": {
+                      "default": [],
+                      "markdownDescription": "templateExtensions gives the extensions of file names that are treateed\nas template files. (The extension\nis the part of the file name after the final dot.)\n",
+                      "type": "array"
                     },
                     "gopls.experimentalPackageCacheKey": {
                       "default": true,
@@ -444,26 +457,17 @@
                         "Link"
                       ],
                       "markdownDescription": "importShortcut specifies whether import statements should link to\ndocumentation or go to definitions.\n",
-                      "markdownEnumDescriptions": [
-                        "",
-                        "",
-                        ""
-                      ],
                       "type": "string"
                     },
                     "gopls.symbolMatcher": {
-                      "default": "Fuzzy",
+                      "default": "FastFuzzy",
                       "enum": [
                         "CaseInsensitive",
                         "CaseSensitive",
+                        "FastFuzzy",
                         "Fuzzy"
                       ],
-                      "markdownDescription": "(Advanced) symbolMatcher sets the algorithm that is used when finding workspace symbols.\n",
-                      "markdownEnumDescriptions": [
-                        "",
-                        "",
-                        ""
-                      ],
+                      "markdownDescription": "symbolMatcher sets the algorithm that is used when finding workspace symbols.\n",
                       "type": "string"
                     },
                     "gopls.symbolStyle": {
