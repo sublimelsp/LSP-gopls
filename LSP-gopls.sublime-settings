@@ -5,6 +5,11 @@
   ],
   "selector": "source.go | source.gomod",
   "settings": {
+    // (Experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated
+    // package metadata to provide editor features if the go command fails to
+    // load packages for some reason (like an invalid go.mod file). This will
+    // eventually be the default behavior, and this setting will be removed.
+    "gopls.experimentalUseInvalidMetadata": false,
     // (Experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module
     // downloads rather than requiring user action. This option will eventually
     // be removed.
@@ -23,7 +28,6 @@
     // buildFlags is the set of flags passed on to the build system when invoked.
     // It is applied to queries like `go list`, which is used when discovering files.
     // The most common use is to set `-tags`.
-    // If unspecified, values of `go.buildFlags, go.buildTags` will be propagated.
     "gopls.buildFlags": [],
     // codelenses overrides the enabled/disabled state of code lenses. See the
     // "Code Lenses" section of the
@@ -47,7 +51,9 @@
     // Include only project_a: `-` (exclude everything), `+project_a`
     // Include only project_a, but not node_modules inside it: `-`, `+project_a`,
     // `-project_a/node_modules`
-    "gopls.directoryFilters": [],
+    "gopls.directoryFilters": [
+      "-node_modules"
+    ],
     // env adds environment variables to external commands run by `gopls`, most notably `go
     // list`.
     "gopls.env": {},
@@ -78,6 +84,10 @@
     // (Experimental) experimentalTemplateSupport opts into the experimental support
     // for template files.
     "gopls.experimentalTemplateSupport": false,
+    // templateExtensions gives the extensions of file names that are treateed
+    // as template files. (The extension
+    // is the part of the file name after the final dot.)
+    "gopls.templateExtensions": [],
     // (Experimental) experimentalWorkspaceModule opts a user into the experimental support
     // for multi-module workspaces.
     "gopls.experimentalWorkspaceModule": false,
@@ -118,9 +128,8 @@
     "gopls.semanticTokens": false,
     // (Experimental) staticcheck enables additional analyses from staticcheck.io.
     "gopls.staticcheck": false,
-    // (Advanced) symbolMatcher sets the algorithm that is used when finding workspace symbols.
-    // possible values: CaseInsensitive, CaseSensitive, Fuzzy
-    "gopls.symbolMatcher": "Fuzzy",
+    // symbolMatcher sets the algorithm that is used when finding workspace symbols.
+    "gopls.symbolMatcher": "FastFuzzy",
     // (Advanced) symbolStyle controls how symbols are qualified in symbol responses.
     // possible values: Dynamic, Full, Package
     "gopls.symbolStyle": "Dynamic",
