@@ -9,7 +9,7 @@
     // package metadata to provide editor features if the go command fails to
     // load packages for some reason (like an invalid go.mod file). This will
     // eventually be the default behavior, and this setting will be removed.
-    "experimentalUseInvalidMetadata": false,
+    "gopls.experimentalUseInvalidMetadata": false,
     // (Experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module
     // downloads rather than requiring user action. This option will eventually
     // be removed.
