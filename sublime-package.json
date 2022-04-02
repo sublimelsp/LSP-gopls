@@ -70,11 +70,6 @@
                       "markdownDescription": "(Experimental) experimentalPackageCacheKey controls whether to use a coarser cache key\nfor package type information to increase cache hits. This setting removes\nthe user's environment, build flags, and working directory from the cache\nkey, which should be a safe change as all relevant inputs into the type\nchecking pass are already hashed into the key. This is temporarily guarded\nby an experiment because caching behavior is subtle and difficult to\ncomprehensively test.\n",
                       "type": "boolean"
                     },
-                    "gopls.experimentalTemplateSupport": {
-                      "default": false,
-                      "markdownDescription": "(Experimental) experimentalTemplateSupport opts into the experimental support\nfor template files.\n",
-                      "type": "boolean"
-                    },
                     "gopls.experimentalWorkspaceModule": {
                       "default": false,
                       "markdownDescription": "(Experimental) experimentalWorkspaceModule opts a user into the experimental support\nfor multi-module workspaces.\n",
