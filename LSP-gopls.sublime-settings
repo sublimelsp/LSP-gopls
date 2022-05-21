@@ -81,9 +81,6 @@
     // (Experimental) experimentalPostfixCompletions enables artifical method snippets
     // such as "someSlice.sort!".
     "gopls.experimentalPostfixCompletions": true,
-    // (Experimental) experimentalTemplateSupport opts into the experimental support
-    // for template files.
-    "gopls.experimentalTemplateSupport": false,
     // templateExtensions gives the extensions of file names that are treateed
     // as template files. (The extension
     // is the part of the file name after the final dot.)
