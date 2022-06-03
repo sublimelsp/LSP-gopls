@@ -135,5 +135,7 @@
     "gopls.usePlaceholders": false,
     // (For Debugging) verboseOutput enables additional debug logging.
     "gopls.verboseOutput": false,
-  }
+  },
+  "gopls.terminusAutoClose": false,
+  "gopls.terminusUsePanel": false
 }
