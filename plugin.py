@@ -4,6 +4,9 @@ import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
 from LSP.plugin.core.typing import Any, Optional, Tuple
+from LSP.plugin.core.registry import LspTextCommand
+from LSP.plugin import Request
+from LSP.plugin.core.views import uri_from_view
 
 from shutil import which
 import subprocess
@@ -20,6 +23,9 @@ TAG = '0.8.4'
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
+
+
+SESSION_NAME = "gopls"
 
 
 class Gopls(AbstractPlugin):
@@ -49,7 +55,8 @@ class Gopls(AbstractPlugin):
         command = get_setting(
             'command', [os.path.join(cls.basedir(), 'bin', binary)]
         )
-        gopls_binary = command[0].replace('${storage_path}', cls.storage_path())
+        gopls_binary = command[0].replace(
+            '${storage_path}', cls.storage_path())
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
         return _is_binary_available(gopls_binary)
@@ -146,6 +153,50 @@ def run_go_command(
         stderr,
         process.returncode,
     )
+
+
+class GoplsCommand(LspTextCommand):
+    session_name = SESSION_NAME
+
+
+class GoplsRunVulnCheckCommand(GoplsCommand):
+    def run(self, _: sublime.Edit, workspace: bool = False) -> None:
+        session = self.session_by_name(self.session_name)
+        if session is None:
+            return
+
+        view = self.view
+        if not view:
+            return
+
+        if workspace:
+            window = self.view.window()
+            if not window:
+                return
+
+            folders = session.get_workspace_folders()
+            window.show_quick_panel(
+                [
+                    sublime.QuickPanelItem(folder.name, folder.uri()) for folder in folders
+                ], on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri()) if x != -1 else None)
+        else:
+            path = os.path.dirname(uri_from_view(self.view))
+            self.run_gopls_vulncheck(path)
+
+    def run_gopls_vulncheck(self, path: str) -> None:
+        session = self.session_by_name(self.session_name)
+        if session is None:
+            return
+
+        session.send_request(Request("workspace/executeCommand", {
+                             "command": "gopls.run_vulncheck_exp", 'arguments': [{'dir': path}]}), self.on_result_async)
+
+    def on_result_async(self, text) -> None:
+        window = self.view.window()
+        if window is None:
+            return
+        if text is not None:
+            print(text)
 
 
 def to_int(value: Optional[str]) -> int:

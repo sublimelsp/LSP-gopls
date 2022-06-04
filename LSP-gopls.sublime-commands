@@ -7,4 +7,15 @@
             "default": "// Settings in here override those in \"LSP-gopls/LSP-gopls.sublime-settings\"\n\n{\n\t$0\n}\n",
         },
     },
+    {
+        "caption": "LSP-gopls: Run Vuln Check (Experimental)",
+        "command": "gopls_run_vuln_check"
+    },
+    {
+        "caption": "LSP-gopls: Run Vuln Check (Workspaces) (Experimental)",
+        "command": "gopls_run_vuln_check",
+        "args": {
+            "workspace": true
+        },
+    },
 ]
