@@ -25,6 +25,16 @@
                   "additionalProperties": false,
                   "type": "object",
                   "properties": {
+                    "gopls.terminusAutoClose": {
+                      "default": false,
+                      "markdownDescription": "terminusAutoClose controls if the terminus panel/tab will auto close on completion\n",
+                      "type": "boolean"
+                    },
+                    "gopls.terminusUsePanel": {
+                      "default": false,
+                      "markdownDescription": "terminusUsePanel controls if the terminus outputs to a Sublime Panel instead of a Sublime Tab\n",
+                      "type": "boolean"
+                    },
                     "gopls.experimentalUseInvalidMetadata": {
                       "default": false,
                       "markdownDescription": "(Experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated\npackage metadata to provide editor features if the go command fails to\nload packages for some reason (like an invalid go.mod file). This will\neventually be the default behavior, and this setting will be removed.\n",
@@ -32,12 +42,12 @@
                     },
                     "gopls.allowImplicitNetworkAccess": {
                       "default": false,
-                      "markdownDescription": "(Experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module\ndownloads rather than requiring user action. This option will eventually\nbe removed.\n",
+                      "markdownDescription": "(Experimental) allowImplicitNetworkAccess disables `GOPROXY=off`, allowing implicit module\ndownloads rather than requiring user action. This option will eventually\nbe removed.\n",
                       "type": "boolean"
                     },
                     "gopls.allowModfileModifications": {
                       "default": false,
-                      "markdownDescription": "(Experimental) allowModfileModifications disables -mod=readonly, allowing imports from\nout-of-scope modules. This option will eventually be removed.\n",
+                      "markdownDescription": "(Experimental) allowModfileModifications disables `-mod=readonly`, allowing imports from\nout-of-scope modules. This option will eventually be removed.\n",
                       "type": "boolean"
                     },
                     "gopls.buildFlags": {
