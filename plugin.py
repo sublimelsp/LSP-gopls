@@ -3,6 +3,8 @@
 import sublime
 
 from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
+from LSP.plugin.core.sessions import Session
+from LSP.plugin.core.url import parse_uri
 from LSP.plugin.core.typing import Any, Optional, Tuple, Mapping, Callable, List, Union
 
 from shutil import which
@@ -16,8 +18,6 @@ try:
 except ImportError:
     Terminus = None
 
-# {'command': 'gopls.test', 'arguments': ['file:///Users/zacharyschulze/Library/Application%20Support/Sublime%20Text/Packages/LSP-gopls/test_data/mmath/math_test.go', ['TestAdd'], None], 'workDoneToken': 'wd6'}
-
 '''
 Current version of gopls that the plugin installs
 Review gopls settings when updating TAG to see if
@@ -29,34 +29,31 @@ GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
 
 
-def open_tests_in_terminus(window: Optional[sublime.Window], arguments: List) -> None:
-    if len(arguments) != 3:
+def open_tests_in_terminus(session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]) -> None:
+    if not session:
         return
 
     if not window:
+        return
+
+    if len(arguments) < 2:
         return
 
     view = window.active_view()
     if not view:
         return
 
-    if not Terminus:
-        sublime.error_message(
-            'Cannot run executable. You need to install the \'Terminus\' package and then restart Sublime Text')
-        return
-
-    go_test_directory = os.path.dirname(arguments[0]).lstrip('file:').replace('%20', ' ')
+    go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
     args = [go_test_directory]
     for test_command in arguments[1]:
         command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}$'.format(test_command)]
-
         terminus_args = {
             'title': 'Go Test',
             'cmd': command_to_run,
             'cwd': go_test_directory,
-            'auto_close': get_setting(view, 'gopls.terminusAutoClose', False)
+            'auto_close': get_setting(session, 'gopls.terminusAutoClose', False)
         }
-        if get_setting(view, 'gopls.terminusUsePanel', True):
+        if get_setting(session, 'gopls.terminusUsePanel', True):
             terminus_args['panel_name'] = 'Go Test'
         window.run_command('terminus_open', terminus_args)
 
@@ -85,9 +82,7 @@ class Gopls(AbstractPlugin):
     @classmethod
     def _is_gopls_installed(cls) -> bool:
         binary = 'gopls.exe' if sublime.platform() == 'windows' else 'gopls'
-        command = get_setting(None,
-            'command', [os.path.join(cls.basedir(), 'bin', binary)]
-        )
+        command = get_setting(None,'command', [os.path.join(cls.basedir(), 'bin', binary)])
         gopls_binary = command[0].replace('${storage_path}', cls.storage_path())
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
@@ -155,13 +150,16 @@ class Gopls(AbstractPlugin):
             fp.write(cls.server_version())
 
     def on_pre_server_command(self, command: Mapping[str, Any], done_callback: Callable[[], None]) -> bool:
+        if not Terminus:
+            return False
+
         command_name = command['command']
         try:
             session = self.weaksession()
             if not session:
                 return False
             if command_name in ('gopls.test'):
-                open_tests_in_terminus(sublime.active_window(), command['arguments'])
+                open_tests_in_terminus(session, sublime.active_window(), command['arguments'])
                 done_callback()
                 return True
             else:
@@ -212,13 +210,16 @@ def to_int(value: Optional[str]) -> int:
 def _is_binary_available(path) -> bool:
     return bool(which(path))
 
-def get_setting(view: sublime.View = None, key: str = '', default: Optional[Union[str, bool, List[str]]] = None) -> Any:
-    if view:
-        settings = view.settings()
-        if settings.has(key):
-            return settings.get(key)
-    settings = sublime.load_settings('LSP-gopls.sublime-settings').get('settings', {})
-    return settings.get(key, default)
+
+def get_setting(session: Session, key: str, default: Optional[Union[str, bool, List[str]]] = None) -> Any:
+    if not session:
+        return default
+
+    setting = session.config.settings.get(key)
+    if not setting:
+        return default
+
+    return setting
 
 
 def plugin_loaded():
