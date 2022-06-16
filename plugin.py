@@ -48,10 +48,7 @@ def open_tests_in_terminus(window: Optional[sublime.Window], arguments: List) ->
     go_test_directory = os.path.dirname(arguments[0]).lstrip('file:').replace('%20', ' ')
     args = [go_test_directory]
     for test_command in arguments[1]:
-        runnable_args = args
-        runnable_args.extend(['-v', '-count=1', '-run', '^{0}$'.format(test_command)])
-        command_to_run = ['go', 'test']
-        command_to_run.extend(runnable_args)
+        command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}$'.format(test_command)]
 
         terminus_args = {
             'title': 'Go Test',
