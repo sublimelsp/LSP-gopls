@@ -30,9 +30,6 @@ RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
 
 
 def open_tests_in_terminus(session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]) -> None:
-    if not session:
-        return
-
     if not window:
         return
 
@@ -82,8 +79,9 @@ class Gopls(AbstractPlugin):
     @classmethod
     def _is_gopls_installed(cls) -> bool:
         binary = 'gopls.exe' if sublime.platform() == 'windows' else 'gopls'
-        command = get_setting(None,'command', [os.path.join(cls.basedir(), 'bin', binary)])
-        gopls_binary = command[0].replace('${storage_path}', cls.storage_path())
+        command = [os.path.join(cls.basedir(), 'bin', binary)]
+
+        gopls_binary = sublime.expand_variables(command[0], {'storage_path': cls.storage_path()})
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
         return _is_binary_available(gopls_binary)
@@ -212,14 +210,11 @@ def _is_binary_available(path) -> bool:
 
 
 def get_setting(session: Session, key: str, default: Optional[Union[str, bool, List[str]]] = None) -> Any:
-    if not session:
+    value = session.config.settings.get(key)
+    if value is None:
         return default
 
-    setting = session.config.settings.get(key)
-    if not setting:
-        return default
-
-    return setting
+    return value
 
 
 def plugin_loaded():
