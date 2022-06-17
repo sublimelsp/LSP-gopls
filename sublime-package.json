@@ -25,12 +25,12 @@
                   "additionalProperties": false,
                   "type": "object",
                   "properties": {
-                    "gopls.testsTerminusAutoClose": {
+                    "gopls.testsTerminusPanelAutoClose": {
                       "default": false,
                       "markdownDescription": "Controls if the terminus panel/tab will auto close on completion.",
                       "type": "boolean"
                     },
-                    "gopls.testsTerminusUsePanel": {
+                    "gopls.testsUseTerminusPanel": {
                       "default": true,
                       "markdownDescription": "Controls if the terminus outputs to a Sublime Panel instead of a Sublime Tab.",
                       "type": "boolean"
