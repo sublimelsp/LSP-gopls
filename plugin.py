@@ -48,9 +48,9 @@ def open_tests_in_terminus(session: Session, window: Optional[sublime.Window], a
             'title': 'Go Test',
             'cmd': command_to_run,
             'cwd': go_test_directory,
-            'auto_close': get_setting(session, 'gopls.terminusAutoClose', False)
+            'auto_close': get_setting(session, 'closeTestResultsWhenFinished', False)
         }
-        if get_setting(session, 'gopls.terminusUsePanel', True):
+        if get_setting(session, 'runTestsInPanel', True):
             terminus_args['panel_name'] = 'Go Test'
         window.run_command('terminus_open', terminus_args)
 
