@@ -27,12 +27,12 @@
                   "properties": {
                     "closeTestResultsWhenFinished": {
                       "default": false,
-                      "markdownDescription": "Controls if the terminus panel/tab will auto close on completion.",
+                      "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.",
                       "type": "boolean"
                     },
                     "runTestsInPanel": {
                       "default": true,
-                      "markdownDescription": "Controls if the terminus outputs to a Sublime Panel instead of a Sublime Tab.",
+                      "markdownDescription": "Controls if the test results output to a panel instead of a tab.",
                       "type": "boolean"
                     },
                     "gopls.experimentalUseInvalidMetadata": {
