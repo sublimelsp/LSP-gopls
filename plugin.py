@@ -2,9 +2,7 @@
 
 import sublime
 
-from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.sessions import Session
-from LSP.plugin.core.url import parse_uri
+from LSP.plugin import AbstractPlugin, Session, parse_uri, register_plugin, unregister_plugin
 from LSP.plugin.core.typing import Any, Optional, Tuple, Mapping, Callable, List, Union
 
 from shutil import which
@@ -29,7 +27,9 @@ GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
 
 
-def open_tests_in_terminus(session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]) -> None:
+def open_tests_in_terminus(
+    session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]
+) -> None:
     if not window:
         return
 
@@ -43,7 +43,7 @@ def open_tests_in_terminus(session: Session, window: Optional[sublime.Window], a
     go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
     args = [go_test_directory]
     for test_command in arguments[1]:
-        command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}$'.format(test_command)]
+        command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}\\$'.format(test_command)]
         terminus_args = {
             'title': 'Go Test',
             'cmd': command_to_run,
@@ -73,7 +73,7 @@ class Gopls(AbstractPlugin):
         try:
             with open(os.path.join(cls.basedir(), 'VERSION'), 'r') as fp:
                 return fp.read()
-        except:
+        except OSError:
             return None
 
     @classmethod
@@ -152,19 +152,17 @@ class Gopls(AbstractPlugin):
             return False
 
         command_name = command['command']
-        try:
+        if command_name in ('gopls.test'):
             session = self.weaksession()
             if not session:
                 return False
-            if command_name in ('gopls.test'):
+            try:
                 open_tests_in_terminus(session, sublime.active_window(), command['arguments'])
                 done_callback()
                 return True
-            else:
-                return False
-        except Exception as ex:
-            print('Exception handling command {}: {}'.format(command_name, ex))
-            return False
+            except Exception as ex:
+                print('Exception handling command {}: {}'.format(command_name, ex))
+        return False
 
 
 def run_go_command(
