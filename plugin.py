@@ -25,7 +25,7 @@ GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
 
 
-SESSION_NAME = "gopls"
+SESSION_NAME = 'gopls'
 
 
 class Gopls(AbstractPlugin):
@@ -160,7 +160,8 @@ class GoplsCommand(LspTextCommand):
 
 
 class GoplsRunVulnCheckCommand(GoplsCommand):
-    def run(self, _: sublime.Edit, workspace: bool = False) -> None:
+    def run(self, edit: sublime.Edit, workspace: bool = False) -> None:
+        self.edit = edit
         session = self.session_by_name(self.session_name)
         if session is None:
             return
@@ -188,15 +189,22 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         if session is None:
             return
 
-        session.send_request(Request("workspace/executeCommand", {
-                             "command": "gopls.run_vulncheck_exp", 'arguments': [{'dir': path}]}), self.on_result_async)
+        session.send_request(Request('workspace/executeCommand',
+            {'command': 'gopls.run_vulncheck_exp','arguments': [{'dir': path}]}
+            ), on_result=lambda x: self.show_results_async(x.get('Vuln')))
 
-    def on_result_async(self, text) -> None:
+    def show_results_async(self, content: str) -> None:
         window = self.view.window()
-        if window is None:
+        if not window:
+            # default to console
+            print(content)
             return
-        if text is not None:
-            print(text)
+
+        if content is not None:
+            self.panel = window.create_output_panel('gopls.command_results')
+            self.panel.insert(self.edit, 0, content)
+            self.panel.set_read_only(True)
+            window.run_command('show_panel', { 'panel': 'gopls.command_results' })
 
 
 def to_int(value: Optional[str]) -> int:
