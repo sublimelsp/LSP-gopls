@@ -5,6 +5,8 @@
   ],
   "selector": "source.go | source.gomod",
   "settings": {
+    "closeTestResultsWhenFinished": false,
+    "runTestsInPanel": true,
     // (Experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated
     // package metadata to provide editor features if the go command fails to
     // load packages for some reason (like an invalid go.mod file). This will
@@ -135,5 +137,5 @@
     "gopls.usePlaceholders": false,
     // (For Debugging) verboseOutput enables additional debug logging.
     "gopls.verboseOutput": false,
-  }
+  },
 }

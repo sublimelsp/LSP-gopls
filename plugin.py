@@ -2,14 +2,19 @@
 
 import sublime
 
-from LSP.plugin import AbstractPlugin, register_plugin, unregister_plugin
-from LSP.plugin.core.typing import Any, Optional, Tuple
+from LSP.plugin import AbstractPlugin, Session, parse_uri, register_plugin, unregister_plugin
+from LSP.plugin.core.typing import Any, Optional, Tuple, Mapping, Callable, List, Union
 
 from shutil import which
 import subprocess
 import tempfile
 import os
 import re
+
+try:
+    import Terminus  # type: ignore
+except ImportError:
+    Terminus = None
 
 '''
 Current version of gopls that the plugin installs
@@ -20,6 +25,34 @@ TAG = '0.8.4'
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
+
+
+def open_tests_in_terminus(
+    session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]
+) -> None:
+    if not window:
+        return
+
+    if len(arguments) < 2:
+        return
+
+    view = window.active_view()
+    if not view:
+        return
+
+    go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
+    args = [go_test_directory]
+    for test_command in arguments[1]:
+        command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}\\$'.format(test_command)]
+        terminus_args = {
+            'title': 'Go Test',
+            'cmd': command_to_run,
+            'cwd': go_test_directory,
+            'auto_close': get_setting(session, 'closeTestResultsWhenFinished', False)
+        }
+        if get_setting(session, 'runTestsInPanel', True):
+            terminus_args['panel_name'] = 'Go Test'
+        window.run_command('terminus_open', terminus_args)
 
 
 class Gopls(AbstractPlugin):
@@ -40,16 +73,15 @@ class Gopls(AbstractPlugin):
         try:
             with open(os.path.join(cls.basedir(), 'VERSION'), 'r') as fp:
                 return fp.read()
-        except:
+        except OSError:
             return None
 
     @classmethod
     def _is_gopls_installed(cls) -> bool:
         binary = 'gopls.exe' if sublime.platform() == 'windows' else 'gopls'
-        command = get_setting(
-            'command', [os.path.join(cls.basedir(), 'bin', binary)]
-        )
-        gopls_binary = command[0].replace('${storage_path}', cls.storage_path())
+        command = [os.path.join(cls.basedir(), 'bin', binary)]
+
+        gopls_binary = sublime.expand_variables(command[0], {'storage_path': cls.storage_path()})
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
         return _is_binary_available(gopls_binary)
@@ -115,6 +147,23 @@ class Gopls(AbstractPlugin):
         with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
             fp.write(cls.server_version())
 
+    def on_pre_server_command(self, command: Mapping[str, Any], done_callback: Callable[[], None]) -> bool:
+        if not Terminus:
+            return False
+
+        command_name = command['command']
+        if command_name in ('gopls.test'):
+            session = self.weaksession()
+            if not session:
+                return False
+            try:
+                open_tests_in_terminus(session, sublime.active_window(), command['arguments'])
+                done_callback()
+                return True
+            except Exception as ex:
+                print('Exception handling command {}: {}'.format(command_name, ex))
+        return False
+
 
 def run_go_command(
     env_vars: dict,
@@ -158,9 +207,12 @@ def _is_binary_available(path) -> bool:
     return bool(which(path))
 
 
-def get_setting(key: str, default=None) -> Any:
-    settings = sublime.load_settings('LSP-gopls.sublime-settings')
-    return settings.get(key, default)
+def get_setting(session: Session, key: str, default: Optional[Union[str, bool, List[str]]] = None) -> Any:
+    value = session.config.settings.get(key)
+    if value is None:
+        return default
+
+    return value
 
 
 def plugin_loaded():
