@@ -21,12 +21,12 @@
                   "properties": {
                     "closeTestResultsWhenFinished": {
                       "default": false,
-                      "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.",
+                      "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.\n",
                       "type": "boolean"
                     },
                     "runTestsInPanel": {
                       "default": true,
-                      "markdownDescription": "Controls if the test results output to a panel instead of a tab.",
+                      "markdownDescription": "Controls if the test results output to a panel instead of a tab.\n",
                       "type": "boolean"
                     },
                     "gopls.buildFlags": {
@@ -36,8 +36,8 @@
                     },
                     "gopls.env": {
                       "type": "object",
-                      "markdownDescription": "env adds environment variables to external commands run by `gopls`, most notably `go list`.\n",
                       "default": {},
+                      "markdownDescription": "env adds environment variables to external commands run by `gopls`, most notably `go list`.\n",
                       "properties": {}
                     },
                     "gopls.directoryFilters": {
@@ -53,10 +53,8 @@
                       "markdownDescription": "templateExtensions gives the extensions of file names that are treateed\nas template files. (The extension\nis the part of the file name after the final dot.)\n"
                     },
                     "gopls.memoryMode": {
-                      "type": "enum",
-                      "default": [
-                        "Normal"
-                      ],
+                      "type": "string",
+                      "default": "Normal",
                       "markdownDescription": "(experimental) memoryMode controls the tradeoff `gopls` makes between memory usage and\ncorrectness.\n\nValues other than `Normal` are untested and may break in surprising ways.\n",
                       "enum": [
                         "DegradeClosed",
@@ -98,10 +96,8 @@
                       "markdownDescription": "(experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated\npackage metadata to provide editor features if the go command fails to\nload packages for some reason (like an invalid go.mod file). This will\neventually be the default behavior, and this setting will be removed.\n"
                     },
                     "gopls.hoverKind": {
-                      "type": "enum",
-                      "default": [
-                        "FullDocumentation"
-                      ],
+                      "type": "string",
+                      "default": "FullDocumentation",
                       "markdownDescription": "hoverKind controls the information that appears in the hover text.\nSingleLine and Structured are intended for use only by authors of editor plugins.\n",
                       "enum": [
                         "FullDocumentation",
@@ -139,10 +135,8 @@
                       "markdownDescription": "(debug) completionBudget is the soft latency goal for completion requests. Most\nrequests finish in a couple milliseconds, but in some cases deep\ncompletions can take much longer. As we use up our budget we\ndynamically reduce the search scope to ensure we return timely\nresults. Zero means unlimited.\n"
                     },
                     "gopls.matcher": {
-                      "type": "enum",
-                      "default": [
-                        "Fuzzy"
-                      ],
+                      "type": "string",
+                      "default": "Fuzzy",
                       "markdownDescription": "(advanced) matcher sets the algorithm that is used when calculating completion\ncandidates.\n",
                       "enum": [
                         "CaseInsensitive",
@@ -161,10 +155,8 @@
                       "markdownDescription": "(experimental) experimentalPostfixCompletions enables artificial method snippets\nsuch as \"someSlice.sort!\".\n"
                     },
                     "gopls.importShortcut": {
-                      "type": "enum",
-                      "default": [
-                        "Both"
-                      ],
+                      "type": "string",
+                      "default": "Both",
                       "markdownDescription": "importShortcut specifies whether import statements should link to\ndocumentation or go to definitions.\n",
                       "enum": [
                         "Both",
@@ -178,10 +170,8 @@
                       ]
                     },
                     "gopls.symbolMatcher": {
-                      "type": "enum",
-                      "default": [
-                        "FastFuzzy"
-                      ],
+                      "type": "string",
+                      "default": "FastFuzzy",
                       "markdownDescription": "(advanced) symbolMatcher sets the algorithm that is used when finding workspace symbols.\n",
                       "enum": [
                         "CaseInsensitive",
@@ -197,10 +187,8 @@
                       ]
                     },
                     "gopls.symbolStyle": {
-                      "type": "enum",
-                      "default": [
-                        "Dynamic"
-                      ],
+                      "type": "string",
+                      "default": "Dynamic",
                       "markdownDescription": "(advanced) symbolStyle controls how symbols are qualified in symbol responses.\n\nExample Usage:\n\n```json5\n\"gopls\": {\n...\n  \"symbolStyle\": \"Dynamic\",\n...\n}\n```\n",
                       "enum": [
                         "Dynamic",
@@ -215,8 +203,8 @@
                     },
                     "gopls.analyses": {
                       "type": "object",
-                      "markdownDescription": "analyses specify analyses that the user would like to enable or disable.\nA map of the names of analysis passes that should be enabled/disabled.\nA full list of analyzers that gopls uses can be found\n[here](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).\n\nExample Usage:\n\n```json5\n...\n\"analyses\": {\n  \"unreachable\": false, // Disable the unreachable analyzer.\n  \"unusedparams\": true  // Enable the unusedparams analyzer.\n}\n...\n```\n",
                       "default": {},
+                      "markdownDescription": "analyses specify analyses that the user would like to enable or disable.\nA map of the names of analysis passes that should be enabled/disabled.\nA full list of analyzers that gopls uses can be found\n[here](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).\n\nExample Usage:\n\n```json5\n...\n\"analyses\": {\n  \"unreachable\": false, // Disable the unreachable analyzer.\n  \"unusedparams\": true  // Enable the unusedparams analyzer.\n}\n...\n```\n",
                       "properties": {
                         "asmdecl": {
                           "markdownDescription": "report mismatches between assembly files and Go declarations",
@@ -452,13 +440,13 @@
                     },
                     "gopls.annotations": {
                       "type": "object",
-                      "markdownDescription": "(experimental) annotations specifies the various kinds of optimization diagnostics\nthat should be reported by the gc_details command.\n",
                       "default": {
                         "bounds": true,
                         "escape": true,
                         "inline": true,
                         "nil": true
                       },
+                      "markdownDescription": "(experimental) annotations specifies the various kinds of optimization diagnostics\nthat should be reported by the gc_details command.\n",
                       "properties": {
                         "bounds": {
                           "markdownDescription": "`\"bounds\"` controls bounds checking diagnostics.\n",
@@ -494,8 +482,8 @@
                     },
                     "gopls.hints": {
                       "type": "object",
-                      "markdownDescription": "(experimental) hints specify inlay hints that users want to see.\nA full list of hints that gopls uses can be found\n[here](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).\n",
                       "default": {},
+                      "markdownDescription": "(experimental) hints specify inlay hints that users want to see.\nA full list of hints that gopls uses can be found\n[here](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).\n",
                       "properties": {
                         "assign_variable_types": {
                           "markdownDescription": "Enable/disable inlay hints for variable types in assign statements:\n\n\ti/* int/*, j/* int/* := 0, len(r)-1",
@@ -536,7 +524,6 @@
                     },
                     "gopls.codelenses": {
                       "type": "object",
-                      "markdownDescription": "codelenses overrides the enabled/disabled state of code lenses. See the\n\"Code Lenses\" section of the\n[Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)\nfor the list of supported lenses.\n\nExample Usage:\n\n```json5\n\"gopls\": {\n...\n  \"codelenses\": {\n    \"generate\": false,  // Don't show the `go generate` lens.\n    \"gc_details\": true  // Show a code lens toggling the display of gc's choices.\n  }\n...\n}\n```\n",
                       "default": {
                         "gc_details": false,
                         "generate": true,
@@ -545,6 +532,7 @@
                         "upgrade_dependency": true,
                         "vendor": true
                       },
+                      "markdownDescription": "codelenses overrides the enabled/disabled state of code lenses. See the\n\"Code Lenses\" section of the\n[Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)\nfor the list of supported lenses.\n\nExample Usage:\n\n```json5\n\"gopls\": {\n...\n  \"codelenses\": {\n    \"generate\": false,  // Don't show the `go generate` lens.\n    \"gc_details\": true  // Show a code lens toggling the display of gc's choices.\n  }\n...\n}\n```\n",
                       "properties": {
                         "gc_details": {
                           "markdownDescription": "Toggle the calculation of gc annotations.",
