@@ -1,5 +1,4 @@
 from typing import Union, Dict
-import ast
 import subprocess
 import json
 
@@ -63,6 +62,18 @@ DEFAULT = {
     }
 }
 
+TYPE_MAP = {
+    '[]string': 'array',
+    'map[string]string': 'object',
+    'enum': 'enum',
+    'bool': 'boolean',
+    'string': 'string',
+    'time.Duration': 'string',
+    'map[string]bool': 'object',
+    # Handle bug in api-json command of gopls
+    '': 'boolean'
+}
+
 CUSTOM_SETTINGS = {
     'closeTestResultsWhenFinished': {
         'default': False,
@@ -76,19 +87,8 @@ CUSTOM_SETTINGS = {
     }
 }
 
-TYPE_MAP = {
-    '[]string': 'array',
-    'map[string]string': 'object',
-    'enum': 'enum',
-    'bool': 'boolean',
-    'string': 'string',
-    'time.Duration': 'string',
-    'map[string]bool': 'object',
-    '': 'boolean'
-}
 
-
-def gopls_api_docs() -> Union[Dict, str]:
+def gopls_api_docs() -> Union[Dict, None]:
     process = subprocess.Popen(
         ['gopls', 'api-json'],
         stdout=subprocess.PIPE,
@@ -97,7 +97,8 @@ def gopls_api_docs() -> Union[Dict, str]:
     )
     stdout, stderr = process.communicate()
     if stderr:
-        return stderr
+        print(stderr)
+        return None
 
     settings = DEFAULT
 
@@ -151,6 +152,8 @@ def gopls_api_docs() -> Union[Dict, str]:
 
 def main():
     sublime_package_content = gopls_api_docs()
+    if sublime_package_content is None:
+        return
     with open('sublime-package.json', 'w') as outfile:
         outfile.write(json.dumps(sublime_package_content, indent=2))
 
