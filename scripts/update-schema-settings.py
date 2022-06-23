@@ -141,8 +141,9 @@ class GoplsGenerator:
             if resolved_type == 'enum':
                 resolved_type = 'string'
 
-            markdown_description = value['Doc'] if value.get(
-                'Status', '') == '' else f"({value.get('Status', '')}) {value['Doc']}"
+            markdown_description = value['Doc']
+            if value.get('Status', '') != '':
+                markdown_description = f"({value.get('Status', '')}) {value['Doc']}"
 
             self.properties[current_key] = {
                 'type': resolved_type,
@@ -162,16 +163,18 @@ class GoplsGenerator:
             elif current_type == 'object':
                 self.properties[current_key]['properties'] = {}
                 keys = value['EnumKeys']['Keys']
-                if keys is not None:
-                    enum_type = TYPE_MAP[value['EnumKeys'].get(
-                        'ValueType', 'bool')]
-                    for _, enum in enumerate(keys):
-                        property_name = json.loads(enum['Name'])
-                        self.properties[current_key]['properties'][property_name] = {
-                            'markdownDescription': enum['Doc'],
-                            'type': enum_type,
-                            'default': json.loads(enum['Default'])
-                        }
+                if keys is None:
+                    continue
+
+                enum_type = TYPE_MAP[value['EnumKeys'].get(
+                    'ValueType', 'bool')]
+                for _, enum in enumerate(keys):
+                    property_name = json.loads(enum['Name'])
+                    self.properties[current_key]['properties'][property_name] = {
+                        'markdownDescription': enum['Doc'],
+                        'type': enum_type,
+                        'default': json.loads(enum['Default'])
+                    }
         self.schema['contributions']['settings'][0]['schema']['definitions'][
             'PluginConfig']['properties']['settings']['properties'] = self.properties
         return self.schema
