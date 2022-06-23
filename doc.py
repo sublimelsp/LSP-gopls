@@ -74,6 +74,7 @@ TYPE_MAP = {
     '': 'boolean'
 }
 
+# Custom LSP-gopls settings not provided by gopls directly
 CUSTOM_SETTINGS = {
     'closeTestResultsWhenFinished': {
         'default': False,
