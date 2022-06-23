@@ -106,13 +106,7 @@ def gopls_api_docs() -> Union[Dict, str]:
     for _, value in enumerate(raw_settings['Options']['User']):
         current_type = TYPE_MAP[value['Type']]
         properties[f"gopls.{value['Name']}"] = {}
-        if current_type in ('string',  'array'):
-            properties[f"gopls.{value['Name']}"]['type'] = current_type
-            properties[f"gopls.{value['Name']}"]['default'] = json.loads(
-                value['Default'])
-            properties[f"gopls.{value['Name']}"]['markdownDescription'] = value['Doc'] if value.get(
-                'Status', '') == '' else f"({value.get('Status', '')}) {value['Doc']}"
-        elif current_type == 'boolean':
+        if current_type in ('string',  'array', 'boolean'):
             properties[f"gopls.{value['Name']}"]['type'] = current_type
             properties[f"gopls.{value['Name']}"]['default'] = json.loads(
                 value['Default'])
@@ -156,8 +150,8 @@ def gopls_api_docs() -> Union[Dict, str]:
 
 
 def main():
-    result = gopls_api_docs()
-    print(json.dumps(result))
-
+    sublime_package_content = gopls_api_docs()
+    with open('sublime-package.json', 'w') as outfile:
+        outfile.write(json.dumps(sublime_package_content, indent=2))
 
 main()
