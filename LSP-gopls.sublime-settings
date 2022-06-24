@@ -21,13 +21,13 @@
     // relative to the workspace folder. They are evaluated in order, and
     // the last filter that applies to a path controls whether it is included.
     // The path prefix can be empty, so an initial `-` excludes everything.
-    // 
+    //
     // Examples:
-    // 
+    //
     // Exclude node_modules: `-node_modules`
-    // 
+    //
     // Include only project_a: `-` (exclude everything), `+project_a`
-    // 
+    //
     // Include only project_a, but not node_modules inside it: `-`, `+project_a`, `-project_a/node_modules`
     "gopls.directoryFilters": [
       "-node_modules"
@@ -38,7 +38,7 @@
     "gopls.templateExtensions": [],
     // (experimental) memoryMode controls the tradeoff `gopls` makes between memory usage and
     // correctness.
-    // 
+    //
     // Values other than `Normal` are untested and may break in surprising ways.
     "gopls.memoryMode": "Normal",
     // (experimental) expandWorkspaceToModule instructs `gopls` to adjust the scope of the
@@ -76,10 +76,10 @@
     "gopls.hoverKind": "FullDocumentation",
     // linkTarget controls where documentation links go.
     // It might be one of:
-    // 
+    //
     // * `"godoc.org"`
     // * `"pkg.go.dev"`
-    // 
+    //
     // If company chooses to use its own `godoc.org`, its address can be used as well.
     "gopls.linkTarget": "pkg.go.dev",
     // linksInHover toggles the presence of links to documentation in hover.
@@ -105,9 +105,9 @@
     // (advanced) symbolMatcher sets the algorithm that is used when finding workspace symbols.
     "gopls.symbolMatcher": "FastFuzzy",
     // (advanced) symbolStyle controls how symbols are qualified in symbol responses.
-    // 
+    //
     // Example Usage:
-    // 
+    //
     // ```json5
     // "gopls": {
     // ...
@@ -120,9 +120,9 @@
     // A map of the names of analysis passes that should be enabled/disabled.
     // A full list of analyzers that gopls uses can be found
     // [here](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).
-    // 
+    //
     // Example Usage:
-    // 
+    //
     // ```json5
     // ...
     // "analyses": {
@@ -146,7 +146,7 @@
     // after the most recent file modification before computing deep diagnostics.
     // Simple diagnostics (parsing and type-checking) are always run immediately
     // on recently modified packages.
-    // 
+    //
     // This option must be set to a valid duration string, for example `"250ms"`.
     "gopls.diagnosticsDelay": "250ms",
     // (experimental) experimentalWatchedFileDelay controls the amount of time that gopls waits
@@ -154,7 +154,7 @@
     // before processing all such notifications in a single batch. This is
     // intended for use by LSP clients that don't support their own batching of
     // file system notifications.
-    // 
+    //
     // This option must be set to a valid duration string, for example `"100ms"`.
     "gopls.experimentalWatchedFileDelay": "0s",
     // (experimental) hints specify inlay hints that users want to see.
@@ -165,9 +165,9 @@
     // "Code Lenses" section of the
     // [Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)
     // for the list of supported lenses.
-    // 
+    //
     // Example Usage:
-    // 
+    //
     // ```json5
     // "gopls": {
     // ...

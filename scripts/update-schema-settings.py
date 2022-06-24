@@ -185,7 +185,7 @@ class GoplsGenerator:
         compiled_settings = ''
         for prop in properties:
             lines = '\n'.join(
-                [f'{PREFIX_LSP_GOPLS_SETTINGS}// {line}' for line in properties[prop]['markdownDescription'].split('\n')][:-1])
+                [f'{PREFIX_LSP_GOPLS_SETTINGS}// {line}'.rstrip() for line in properties[prop]['markdownDescription'].split('\n')][:-1])
             defaults = json.dumps(properties[prop]["default"], indent=2)
             defaults = '\n'.join(
                 [f'{PREFIX_LSP_GOPLS_SETTINGS}{line}' for line in defaults.split('\n')])
