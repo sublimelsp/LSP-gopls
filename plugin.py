@@ -243,7 +243,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
             return
 
         folders = session.get_workspace_folders()
-        if len(folders) > 1:
+        if len(folders) < 1:
             path = os.path.dirname(uri_from_view(self.view))
             self.run_gopls_vulncheck(path)
         elif len(folders) == 1:
