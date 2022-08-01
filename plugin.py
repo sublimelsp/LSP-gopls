@@ -2,7 +2,13 @@
 
 import sublime
 
-from LSP.plugin import AbstractPlugin, Session, parse_uri, register_plugin, unregister_plugin
+from LSP.plugin import (
+    AbstractPlugin,
+    Session,
+    parse_uri,
+    register_plugin,
+    unregister_plugin,
+)
 from LSP.plugin.core.typing import Any, Optional, Tuple, Mapping, Callable, List, Union
 from LSP.plugin.core.registry import LspTextCommand
 from LSP.plugin.core.views import uri_from_view
@@ -31,8 +37,11 @@ RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
 
 SESSION_NAME = 'gopls'
 
+
 def open_tests_in_terminus(
-    session: Session, window: Optional[sublime.Window], arguments: Tuple[str, List[str], None]
+    session: Session,
+    window: Optional[sublime.Window],
+    arguments: Tuple[str, List[str], None],
 ) -> None:
     if not window:
         return
@@ -47,12 +56,16 @@ def open_tests_in_terminus(
     go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
     args = [go_test_directory]
     for test_command in arguments[1]:
-        command_to_run = ['go', 'test'] + args + ['-v', '-count=1', '-run', '^{0}\\$'.format(test_command)]
+        command_to_run = (
+            ['go', 'test']
+            + args
+            + ['-v', '-count=1', '-run', '^{0}\\$'.format(test_command)]
+        )
         terminus_args = {
             'title': 'Go Test',
             'cmd': command_to_run,
             'cwd': go_test_directory,
-            'auto_close': get_setting(session, 'closeTestResultsWhenFinished', False)
+            'auto_close': get_setting(session, 'closeTestResultsWhenFinished', False),
         }
         if get_setting(session, 'runTestsInPanel', True):
             terminus_args['panel_name'] = 'Go Test'
@@ -85,7 +98,9 @@ class Gopls(AbstractPlugin):
         binary = 'gopls.exe' if sublime.platform() == 'windows' else 'gopls'
         command = [os.path.join(cls.basedir(), 'bin', binary)]
 
-        gopls_binary = sublime.expand_variables(command[0], {'storage_path': cls.storage_path()})
+        gopls_binary = sublime.expand_variables(
+            command[0], {'storage_path': cls.storage_path()}
+        )
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
         return _is_binary_available(gopls_binary)
@@ -97,11 +112,10 @@ class Gopls(AbstractPlugin):
     @classmethod
     def _get_go_version(cls) -> Tuple[int, int, int]:
         stdout, stderr, return_code = run_go_command(
-            sub_command='version',
-            env_vars=cls._set_env_vars())
+            sub_command='version', env_vars=cls._set_env_vars()
+        )
         if return_code != 0:
-            raise ValueError(
-                'go version error', stderr, 'returncode', return_code)
+            raise ValueError('go version error', stderr, 'returncode', return_code)
 
         if stdout == '':
             return (0, 0, 0)
@@ -145,13 +159,14 @@ class Gopls(AbstractPlugin):
             env_vars=cls._set_env_vars(),
         )
         if return_code != 0:
-            raise ValueError(
-                'go installation error', stderr, 'returncode', return_code)
+            raise ValueError('go installation error', stderr, 'returncode', return_code)
 
         with open(os.path.join(cls.basedir(), 'VERSION'), 'w') as fp:
             fp.write(cls.server_version())
 
-    def on_pre_server_command(self, command: Mapping[str, Any], done_callback: Callable[[], None]) -> bool:
+    def on_pre_server_command(
+        self, command: Mapping[str, Any], done_callback: Callable[[], None]
+    ) -> bool:
         if not Terminus:
             return False
 
@@ -161,7 +176,9 @@ class Gopls(AbstractPlugin):
             if not session:
                 return False
             try:
-                open_tests_in_terminus(session, sublime.active_window(), command['arguments'])
+                open_tests_in_terminus(
+                    session, sublime.active_window(), command['arguments']
+                )
                 done_callback()
                 return True
             except Exception as ex:
@@ -217,30 +234,40 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
             return
 
         folders = session.get_workspace_folders()
-        if folders > 1:
+        if len(folders) > 1:
             path = os.path.dirname(uri_from_view(self.view))
             self.run_gopls_vulncheck(path)
-        elif folders == 1:
+        elif len(folders) == 1:
             self.run_gopls_vulncheck(folders[0].uri())
         else:
+            window = self.view.window()
+            if not window:
+                return
             window.show_quick_panel(
                 [
-                    sublime.QuickPanelItem(folder.name, folder.uri()) for folder in folders
-                ], on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri()) if x != -1 else None)
-
-       
+                    sublime.QuickPanelItem(folder.name, folder.uri())
+                    for folder in folders
+                ],
+                on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri())
+                if x != -1
+                else None,
+            )
 
     def run_gopls_vulncheck(self, path: str) -> None:
         session = self.session_by_name(self.session_name)
         if session is None:
             return
 
-        session.send_request(Request('workspace/executeCommand',
-            {'command': 'gopls.run_vulncheck_exp','arguments': [{'dir': path}]}
-            ), on_result=lambda x: self.show_results_async(x.get('Vuln')))
+        session.send_request(
+            Request(
+                'workspace/executeCommand',
+                {'command': 'gopls.run_vulncheck_exp', 'arguments': [{'dir': path}]},
+            ),
+            on_result=lambda x: self.show_results_async(x.get('Vuln')),
+        )
 
-    def show_results_async(self, content: str) -> None:
-        if content is None or content.strip() == "":
+    def show_results_async(self, content: Optional[str]) -> None:
+        if content is None:
             return
 
         window = self.view.window()
@@ -252,7 +279,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         self.panel = window.create_output_panel('gopls.command_results')
         self.panel.insert(self.edit, 0, content)
         self.panel.set_read_only(True)
-        window.run_command('show_panel', { 'panel': 'gopls.command_results' })
+        window.run_command('show_panel', {'panel': 'gopls.command_results'})
 
 
 def to_int(value: Optional[str]) -> int:
@@ -265,7 +292,11 @@ def _is_binary_available(path) -> bool:
     return bool(which(path))
 
 
-def get_setting(session: Session, key: str, default: Optional[Union[str, bool, List[str]]] = None) -> Any:
+def get_setting(
+    session: Session,
+    key: str,
+    default: Optional[Union[str, bool, List[str]]] = None,
+) -> Any:
     value = session.config.settings.get(key)
     if value is None:
         return default

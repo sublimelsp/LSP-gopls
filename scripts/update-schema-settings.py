@@ -6,9 +6,7 @@ SCHEMA_TEMPLATE = {
     'contributions': {
         'settings': [
             {
-                'file_patterns': [
-                    '/LSP-gopls.sublime-settings'
-                ],
+                'file_patterns': ['/LSP-gopls.sublime-settings'],
                 'schema': {
                     '$id': 'sublime://settings/LSP-gopls',
                     'definitions': {
@@ -17,31 +15,26 @@ SCHEMA_TEMPLATE = {
                                 'initializationOptions': {
                                     'additionalProperties': False,
                                     'type': 'object',
-                                    'properties': {
-                                    }
+                                    'properties': {},
                                 },
                                 'settings': {
                                     'additionalProperties': False,
                                     'type': 'object',
-                                    'properties': {}
-                                }
+                                    'properties': {},
+                                },
                             }
                         }
                     },
                     'allOf': [
-                        {
-                            '$ref': 'sublime://settings/LSP-plugin-base'
-                        },
+                        {'$ref': 'sublime://settings/LSP-plugin-base'},
                         {
                             '$ref': 'sublime://settings/LSP-gopls#/definitions/PluginConfig'
-                        }
-                    ]
-                }
+                        },
+                    ],
+                },
             },
             {
-                'file_patterns': [
-                    '/*.sublime-project'
-                ],
+                'file_patterns': ['/*.sublime-project'],
                 'schema': {
                     'properties': {
                         'settings': {
@@ -56,8 +49,8 @@ SCHEMA_TEMPLATE = {
                             }
                         }
                     }
-                }
-            }
+                },
+            },
         ]
     }
 }
@@ -71,7 +64,7 @@ TYPE_MAP = {
     'time.Duration': 'string',
     'map[string]bool': 'object',
     # Handle bug in api-json command of gopls
-    '': 'boolean'
+    '': 'boolean',
 }
 
 # Custom LSP-gopls settings not provided by gopls directly
@@ -79,13 +72,13 @@ CUSTOM_PROPERTIES = {
     'closeTestResultsWhenFinished': {
         'default': False,
         'markdownDescription': 'Controls if the Terminus panel/tab will auto close on tests completing.\n',
-        'type': 'boolean'
+        'type': 'boolean',
     },
     'runTestsInPanel': {
         'default': True,
         'markdownDescription': 'Controls if the test results output to a panel instead of a tab.\n',
-        'type': 'boolean'
-    }
+        'type': 'boolean',
+    },
 }
 
 BEGIN_LSP_GOPLS_SETTINGS = '''// Packages/User/LSP-gopls.sublime-settings
@@ -114,7 +107,7 @@ class GoplsGenerator:
             ['gopls', 'api-json'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            universal_newlines=True
+            universal_newlines=True,
         )
         stdout, stderr = process.communicate()
         if stderr:
@@ -148,51 +141,61 @@ class GoplsGenerator:
             self.properties[current_key] = {
                 'type': resolved_type,
                 'default': json.loads(value['Default']),
-                'markdownDescription': markdown_description
+                'markdownDescription': markdown_description,
             }
 
             if current_type == 'enum':
                 self.properties[current_key]['enum'] = []
-                self.properties[current_key]['markdownEnumDescriptions'] = [
-                ]
+                self.properties[current_key]['markdownEnumDescriptions'] = []
                 for _, enum in enumerate(value['EnumValues']):
                     self.properties[current_key]['enum'].append(
-                        json.loads(enum['Value']))
+                        json.loads(enum['Value'])
+                    )
                     self.properties[current_key]['markdownEnumDescriptions'].append(
-                        enum.get('Doc', ''))
+                        enum.get('Doc', '')
+                    )
             elif current_type == 'object':
                 self.properties[current_key]['properties'] = {}
                 keys = value['EnumKeys']['Keys']
                 if keys is None:
                     continue
 
-                enum_type = TYPE_MAP[value['EnumKeys'].get(
-                    'ValueType', 'bool')]
+                enum_type = TYPE_MAP[value['EnumKeys'].get('ValueType', 'bool')]
                 for _, enum in enumerate(keys):
                     property_name = json.loads(enum['Name'])
                     self.properties[current_key]['properties'][property_name] = {
                         'markdownDescription': enum['Doc'],
                         'type': enum_type,
-                        'default': json.loads(enum['Default'])
+                        'default': json.loads(enum['Default']),
                     }
         self.schema['contributions']['settings'][0]['schema']['definitions'][
-            'PluginConfig']['properties']['settings']['properties'] = self.properties
+            'PluginConfig'
+        ]['properties']['settings']['properties'] = self.properties
         return self.schema
 
     def generate_lsp_settings(self) -> str:
         properties = self.schema['contributions']['settings'][0]['schema'][
-            'definitions']['PluginConfig']['properties']['settings']['properties']
+            'definitions'
+        ]['PluginConfig']['properties']['settings']['properties']
         compiled_settings = ''
         for prop in properties:
             lines = '\n'.join(
-                [f'{PREFIX_LSP_GOPLS_SETTINGS}// {line}'.rstrip() for line in properties[prop]['markdownDescription'].split('\n')][:-1])
+                [
+                    f'{PREFIX_LSP_GOPLS_SETTINGS}// {line}'.rstrip()
+                    for line in properties[prop]['markdownDescription'].split('\n')
+                ][:-1]
+            )
             defaults = json.dumps(properties[prop]["default"], indent=2)
             defaults = '\n'.join(
-                [f'{PREFIX_LSP_GOPLS_SETTINGS}{line}' for line in defaults.split('\n')])
+                [f'{PREFIX_LSP_GOPLS_SETTINGS}{line}' for line in defaults.split('\n')]
+            )
             defaults = f'{PREFIX_LSP_GOPLS_SETTINGS}"{prop}": {defaults.lstrip()},'
             compiled_settings += lines + '\n' + defaults + '\n'
-        self.gopls_settings = BEGIN_LSP_GOPLS_SETTINGS + \
-            compiled_settings.rstrip() + END_LSP_GOPLS_SETTINGS
+        self.gopls_settings = (
+            BEGIN_LSP_GOPLS_SETTINGS
+            + compiled_settings.rstrip()
+            + END_LSP_GOPLS_SETTINGS
+        )
         return self.gopls_settings
 
     def write_schema_out(self, path: str):
