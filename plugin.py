@@ -206,7 +206,7 @@ class GoplsCommand(LspTextCommand):
 
 
 class GoplsRunVulnCheckCommand(GoplsCommand):
-    def run(self, edit: sublime.Edit, workspace: bool = False) -> None:
+    def run(self, edit: sublime.Edit) -> None:
         self.edit = edit
         session = self.session_by_name(self.session_name)
         if session is None:
@@ -216,19 +216,19 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         if not view:
             return
 
-        if workspace:
-            window = self.view.window()
-            if not window:
-                return
-
-            folders = session.get_workspace_folders()
+        folders = session.get_workspace_folders()
+        if folders > 1:
+            path = os.path.dirname(uri_from_view(self.view))
+            self.run_gopls_vulncheck(path)
+        elif folders == 1:
+            self.run_gopls_vulncheck(folders[0].uri())
+        else:
             window.show_quick_panel(
                 [
                     sublime.QuickPanelItem(folder.name, folder.uri()) for folder in folders
                 ], on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri()) if x != -1 else None)
-        else:
-            path = os.path.dirname(uri_from_view(self.view))
-            self.run_gopls_vulncheck(path)
+
+       
 
     def run_gopls_vulncheck(self, path: str) -> None:
         session = self.session_by_name(self.session_name)
@@ -240,17 +240,19 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
             ), on_result=lambda x: self.show_results_async(x.get('Vuln')))
 
     def show_results_async(self, content: str) -> None:
+        if content is None or content.strip() == "":
+            return
+
         window = self.view.window()
         if not window:
             # default to console
             print(content)
             return
 
-        if content is not None:
-            self.panel = window.create_output_panel('gopls.command_results')
-            self.panel.insert(self.edit, 0, content)
-            self.panel.set_read_only(True)
-            window.run_command('show_panel', { 'panel': 'gopls.command_results' })
+        self.panel = window.create_output_panel('gopls.command_results')
+        self.panel.insert(self.edit, 0, content)
+        self.panel.set_read_only(True)
+        window.run_command('show_panel', { 'panel': 'gopls.command_results' })
 
 
 def to_int(value: Optional[str]) -> int:

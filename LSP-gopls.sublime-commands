@@ -11,11 +11,4 @@
         "caption": "LSP-gopls: Run Vuln Check (Experimental)",
         "command": "gopls_run_vuln_check"
     },
-    {
-        "caption": "LSP-gopls: Run Vuln Check (Workspaces) (Experimental)",
-        "command": "gopls_run_vuln_check",
-        "args": {
-            "workspace": true
-        },
-    },
 ]
