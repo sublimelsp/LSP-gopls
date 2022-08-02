@@ -10,31 +10,39 @@ import mdpopups
 
 class Vulnerabilities:
     PANEL_NAME = 'gopls.vulnerabilities'
+    VULN_HEADER = textwrap.dedent(
+        '''
+        Dir: `{dir}`
+        Analyzed at: <i>`{time}`</i>
+        <span style="color: var(--redish);" >Found {vuln_count} known vulnerabilities</span>
+        <br>
+
+    '''
+    ).strip()
     VULN_TEMPLATE = textwrap.dedent(
         '''
-        ### [{id}]({url}) {symbol}
-        <hr>
+        ## [{id}]({url})
 
-        **CurrentVersion**: `{current_version}`
-        **FixedVersion**: `{fixed_version}`
-        **PkgPath**: `{pkg_path}`
+        {details}
+
+
+        **Package**: `{pkg_path}`
+        **Found in Version**: [{pkg_path}@{current_version}](https://pkg.go.dev/{pkg_path}@{current_version})
+        **Fixed Version**: [{pkg_path}@{fixed_version}](https://pkg.go.dev/{pkg_path}@{fixed_version})
         **Aliases**:
 
         <ul>
         {aliases}
         </ul>
 
-        **CallStackSummaries**:
+        **CallStack Summaries**:
 
         <ul>
         {call_stack_summaries}
         </ul>
 
-        #### Details
 
-        {details}
-
-        #### Call Stacks
+        ### Call Stacks
 
         ```json
         {call_stacks}
@@ -51,13 +59,13 @@ class Vulnerabilities:
         self.panel = self.window.create_output_panel(self.PANEL_NAME, unlisted=True)
 
     def show(self) -> None:
-        content = []
+        mdpopups.erase_phantoms(self.panel, 'gopls.vulnerabilities')
+        content = [self.VULN_HEADER.format(dir='temp', time='temp', vuln_count=len(self.vulnerabilities))]
         for vuln in self.vulnerabilities:
             content.append(
                 self.VULN_TEMPLATE.format(
                     id=vuln['ID'],
                     url=vuln['URL'],
-                    symbol=vuln['Symbol'],
                     current_version=vuln['CurrentVersion'],
                     fixed_version=vuln['FixedVersion'],
                     pkg_path=vuln['PkgPath'],
@@ -82,6 +90,8 @@ class Vulnerabilities:
             layout=sublime.LAYOUT_INLINE,
             md=True,
         )
+        self.panel.set_read_only(True)
+        self.panel.set_read_only(True)
         self.window.run_command(
             'show_panel', {'panel': 'output.{}'.format(self.PANEL_NAME)}
         )
