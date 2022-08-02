@@ -2,6 +2,10 @@
 
 import sublime
 
+
+from .types import GoplsVulnerabilities
+from .vulnerabilities import Vulnerabilities
+
 from LSP.plugin import (
     AbstractPlugin,
     Session,
@@ -17,7 +21,6 @@ from LSP.plugin.core.typing import (
     Callable,
     List,
     Union,
-    Dict,
 )
 from LSP.plugin.core.registry import LspTextCommand
 from LSP.plugin.core.views import uri_from_view
@@ -275,29 +278,17 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
             on_result=lambda x: self.show_results_async(x.get('Vuln')),
         )
 
-    def show_results_async(self, content: Optional[str]) -> None:
-        if content is None:
+    def show_results_async(
+        self, vulnerabilities: Optional[GoplsVulnerabilities]
+    ) -> None:
+        if vulnerabilities is None:
             content = 'No vulnerabilities found'
-
-        self.view.run_command(
-            'gopls_show_output_panel',
-            {
-                'panel_name': 'gopls.vulncheck',
-                'content': content,
-            },
-        )
-
-
-class GoplsShowOutputPanelCommand(GoplsCommand):
-    def run(self, _: sublime.Edit, panel_name: str, content: Union[str, Dict]) -> None:
-        window = self.view.window()
-        if window is None:
             print(content)
             return
 
-        panel = window.create_output_panel(panel_name, True)
-        panel.run_command('insert', {'characters': content})
-        window.run_command('show_panel', {'panel': 'output.{}'.format(panel_name)})
+        Vulnerabilities(
+            window=self.view.window(), vulnerabilities=vulnerabilities
+        ).show()
 
 
 def to_int(value: Optional[str]) -> int:
