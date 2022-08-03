@@ -24,7 +24,8 @@ class Vulnerabilities:
         h4 {
             color: var(--purplish)
         }
-        ''').strip()
+        '''
+    ).strip()
     VULN_HEADER = textwrap.dedent(
         '''
         <h4 style="color: var(--redish);" >Found {vuln_count} known vulnerabilities</h4>
@@ -115,30 +116,34 @@ class Vulnerabilities:
     def call_stacks_to_markdown(self, call_stacks: List[GoplsVulnCallStack]) -> str:
         call_stack = ''
         for stack in call_stacks:
-            call_flow = []  # type: List[str]
-            links = []
+            call_info = {'links': []}  # type List[Dict]
             for call in stack:
-                call_flow.append(call['Name'])
                 uri = parse_uri(call['URI'])[1]
-                if uri == "":
-                    continue
+                if uri != "":
+                    uri = '{uri}:{line}:{character}'.format(
+                        uri=uri,
+                        line=call['Pos']['line'],
+                        character=call['Pos']['character'],
+                    )
 
-                uri = '{uri}:{line}:{character}'.format(
-                    uri=uri,
-                    line=call['Pos']['line'],
-                    character=call['Pos']['character'],
-                )
-                links.append(uri)
-            call_stack += '<h6 class="call" >▼ <i>' if len(links) != 0 else '<h6 class="call" ><i>► '
-            call_stack += ' calls '.join(call_flow)
+                call_info['links'].append({'name': call['Name'], 'uri': uri})
+            call_stack += (
+                '<h6 class="call" >▼ <i>'
+                if len(call_info['links']) != 0 else '<h6 class="call" ><i>► '
+            )
+            call_stack += ' calls '.join([link['name'] for link in call_info['links']])
             call_stack += '</i></h6>\n<ul>'
             call_stack += '\n'.join(
                 [
-                    '''<li><a href='{command}'>{uri}</a></li>'''.format(
-                        command=sublime.command_url('gopls_open_file', {"uri": link}),
-                        uri=link,
+                    '''<li><a href='{command}'>{name}</a></li>'''.format(
+                        command=sublime.command_url(
+                            'gopls_open_file', {"uri": call['uri']}
+                        ),
+                        name=call['name'],
                     )
-                    for link in links
+                    if call['uri'] != ""
+                    else ""
+                    for call in call_info['links']
                 ]
             )
             call_stack += '</ul>\n'

@@ -233,7 +233,7 @@ def run_go_command(
 
 class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
     def run(self, uri: str) -> None:
-        self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)
+        view = self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)
 
 
 class GoplsCommand(LspTextCommand):
