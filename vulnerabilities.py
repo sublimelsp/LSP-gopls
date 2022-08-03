@@ -1,58 +1,68 @@
-import json
 import sublime
 import textwrap
 
-from .types import GoplsVulnerabilities
-from LSP.plugin.core.types import Optional
+import sublime_plugin
+
+from .types import Vulnerabilities, CallStack
+from LSP.plugin.core.typing import Optional, List
+from LSP.plugin import parse_uri
 
 import mdpopups
 
 
-class Vulnerabilities:
+class GoplsVulnerabilities:
     PANEL_NAME = 'gopls.vulnerabilities'
+    CSS = textwrap.dedent(
+        '''
+        strong {
+            color: var(--yellowish)
+        }
+        .call {
+            color: var(--greenish)
+        }
+
+        h4 {
+            color: var(--purplish)
+        }
+        ''').strip()
     VULN_HEADER = textwrap.dedent(
         '''
-        Dir: `{dir}`
-        Analyzed at: <i>`{time}`</i>
-        <span style="color: var(--redish);" >Found {vuln_count} known vulnerabilities</span>
+        <h4 style="color: var(--redish);" >Found {vuln_count} known vulnerabilities</h4>
         <br>
 
     '''
     ).strip()
     VULN_TEMPLATE = textwrap.dedent(
         '''
-        ## [{id}]({url})
-
+        ## <a title="Open vulnerability details" href="{url}">{id}</a>
+        <br>
         {details}
+        <br>
 
 
-        **Package**: `{pkg_path}`
-        **Found in Version**: [{pkg_path}@{current_version}](https://pkg.go.dev/{pkg_path}@{current_version})
-        **Fixed Version**: [{pkg_path}@{fixed_version}](https://pkg.go.dev/{pkg_path}@{fixed_version})
-        **Aliases**:
+        <strong>Package</strong>: `{pkg_path}`
+        <strong>Found in Version</strong>: <a href="https://pkg.go.dev/{pkg_path}@{current_version}">{pkg_path}@{current_version}</a>
+        <strong>Fixed Version</strong>: <a href="https://pkg.go.dev/{pkg_path}@{fixed_version}">{pkg_path}@{fixed_version}</a>
+        <strong>Aliases</strong>:
 
         <ul>
         {aliases}
         </ul>
 
-        **CallStack Summaries**:
-
+        <strong>CallStack Summaries</strong>
         <ul>
         {call_stack_summaries}
         </ul>
 
 
-        ### Call Stacks
-
-        ```json
+        <h4>Call Stacks</h4>
         {call_stacks}
-        ```
         <br>
     '''
     ).strip()
 
     def __init__(
-        self, window: Optional[sublime.Window], vulnerabilities: GoplsVulnerabilities
+        self, window: Optional[sublime.Window], vulnerabilities: Vulnerabilities
     ) -> None:
         self.vulnerabilities = vulnerabilities
         self.window = window or sublime.active_window()
@@ -60,7 +70,11 @@ class Vulnerabilities:
 
     def show(self) -> None:
         mdpopups.erase_phantoms(self.panel, 'gopls.vulnerabilities')
-        content = [self.VULN_HEADER.format(dir='temp', time='temp', vuln_count=len(self.vulnerabilities))]
+        content = [
+            self.VULN_HEADER.format(
+                dir='temp', time='temp', vuln_count=len(self.vulnerabilities)
+            )
+        ]
         for vuln in self.vulnerabilities:
             content.append(
                 self.VULN_TEMPLATE.format(
@@ -79,7 +93,7 @@ class Vulnerabilities:
                         ]
                     ),
                     details=vuln['Details'],
-                    call_stacks=json.dumps(vuln['CallStacks'], indent=4),
+                    call_stacks=self.call_stacks_to_markdown(vuln['CallStacks']),
                 )
             )
         mdpopups.add_phantom(
@@ -89,9 +103,48 @@ class Vulnerabilities:
             content='\n'.join(content),
             layout=sublime.LAYOUT_INLINE,
             md=True,
+            css=self.CSS,
         )
         self.panel.set_read_only(True)
-        self.panel.set_read_only(True)
+        self.panel.set_scratch(True)
+        self.panel.settings().set('gutter', False)
         self.window.run_command(
             'show_panel', {'panel': 'output.{}'.format(self.PANEL_NAME)}
         )
+
+    def call_stacks_to_markdown(self, call_stacks: List[CallStack]) -> str:
+        call_stack = ''
+        for stack in call_stacks:
+            call_flow = []  # type: List[str]
+            links = []
+            for call in stack:
+                call_flow.append(call['Name'])
+                uri = parse_uri(call['URI'])[1]
+                if uri == "":
+                    continue
+
+                uri = '{uri}:{line}:{character}'.format(
+                    uri=uri,
+                    line=call['Pos']['line'],
+                    character=call['Pos']['character'],
+                )
+                links.append(uri)
+            call_stack += '<h6 class="call" >▼ <i>' if len(links) != 0 else '<h6 class="call" ><i>► '
+            call_stack += ' calls '.join(call_flow)
+            call_stack += '</i></h6>\n<ul>'
+            call_stack += '\n'.join(
+                [
+                    '''<li><a href='{command}'>{uri}</a></li>'''.format(
+                        command=sublime.command_url('gopls_open_file', {"uri": link}),
+                        uri=link,
+                    )
+                    for link in links
+                ]
+            )
+            call_stack += '</ul>\n'
+        return call_stack
+
+
+class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
+    def run(self, uri: str) -> None:
+        self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)

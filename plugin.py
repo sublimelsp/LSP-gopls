@@ -1,6 +1,7 @@
 # Packages/LSP-gopls/plugin.py
 
 import sublime
+import sublime_plugin
 
 
 from .types import GoplsVulnerabilities
@@ -9,6 +10,7 @@ from .vulnerabilities import Vulnerabilities
 from LSP.plugin import (
     AbstractPlugin,
     Session,
+    Request,
     parse_uri,
     register_plugin,
     unregister_plugin,
@@ -24,7 +26,6 @@ from LSP.plugin.core.typing import (
 )
 from LSP.plugin.core.registry import LspTextCommand
 from LSP.plugin.core.views import uri_from_view
-from LSP.plugin import Request
 
 from shutil import which
 import subprocess
@@ -230,6 +231,11 @@ def run_go_command(
     )
 
 
+class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
+    def run(self, uri: str) -> None:
+        self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)
+
+
 class GoplsCommand(LspTextCommand):
     session_name = SESSION_NAME
 
@@ -260,9 +266,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
                     sublime.QuickPanelItem(folder.name, folder.uri())
                     for folder in folders
                 ],
-                on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri())
-                if x != -1
-                else None,
+                on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri()) if x != -1 else None,
             )
 
     def run_gopls_vulncheck(self, path: str) -> None:
@@ -282,8 +286,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         self, vulnerabilities: Optional[GoplsVulnerabilities]
     ) -> None:
         if vulnerabilities is None:
-            content = 'No vulnerabilities found'
-            print(content)
+            sublime.message_dialog('No vulnerabilities found')
             return
 
         Vulnerabilities(

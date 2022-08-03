@@ -43,16 +43,16 @@ SCHEMA_TEMPLATE = {
                                     'properties': {
                                         'gopls': {
                                             '$ref': 'sublime://settings/LSP-gopls#/definitions/PluginConfig'
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
                 },
             },
-        ]
-    }
+        ],
+    },
 }
 
 TYPE_MAP = {
