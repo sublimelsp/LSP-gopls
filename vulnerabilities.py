@@ -1,9 +1,7 @@
 import sublime
-import textwrap
-
-import sublime_plugin
 
 from .types import GoplsVulnerabilities, GoplsVulnCallStack
+from .utils import reformat
 from LSP.plugin.core.typing import Optional, List
 from LSP.plugin import parse_uri
 
@@ -12,7 +10,7 @@ import mdpopups
 
 class Vulnerabilities:
     PANEL_NAME = 'gopls.vulnerabilities'
-    CSS = textwrap.dedent(
+    CSS = reformat(
         '''
         strong {
             color: var(--yellowish)
@@ -25,17 +23,16 @@ class Vulnerabilities:
             color: var(--purplish)
         }
         '''
-    ).strip()
-    VULN_HEADER = textwrap.dedent(
+    )
+    VULN_HEADER = reformat(
         '''
         <h4 style="color: var(--redish);" >Found {vuln_count} known vulnerabilities</h4>
         <br>
-
     '''
-    ).strip()
-    VULN_TEMPLATE = textwrap.dedent(
+    )
+    VULN_TEMPLATE = reformat(
         '''
-        ## <a title="Open vulnerability details" href="{url}">{id}</a>
+        <h2><a title="Open vulnerability details" href="{url}">{id}</a></h2>
         <br>
         {details}
         <br>
@@ -60,7 +57,7 @@ class Vulnerabilities:
         {call_stacks}
         <br>
     '''
-    ).strip()
+    )
 
     def __init__(
         self, window: Optional[sublime.Window], vulnerabilities: GoplsVulnerabilities
@@ -116,8 +113,9 @@ class Vulnerabilities:
     def call_stacks_to_markdown(self, call_stacks: List[GoplsVulnCallStack]) -> str:
         call_stack = ''
         for stack in call_stacks:
-            call_info = {'links': []}  # type List[Dict]
+            call_info = []  # type List[Dict]
             for call in stack:
+                info = {'name': call['Name']}
                 uri = parse_uri(call['URI'])[1]
                 if uri != "":
                     uri = '{uri}:{line}:{character}'.format(
@@ -125,13 +123,11 @@ class Vulnerabilities:
                         line=call['Pos']['line'],
                         character=call['Pos']['character'],
                     )
+                    info['uri'] = uri
 
-                call_info['links'].append({'name': call['Name'], 'uri': uri})
-            call_stack += (
-                '<h6 class="call" >▼ <i>'
-                if len(call_info['links']) != 0 else '<h6 class="call" ><i>► '
-            )
-            call_stack += ' calls '.join([link['name'] for link in call_info['links']])
+                call_info.append(info)
+            call_stack += '<h6 class="call" >▼ <i>'
+            call_stack += ' calls '.join([link['name'] for link in call_info])
             call_stack += '</i></h6>\n<ul>'
             call_stack += '\n'.join(
                 [
@@ -141,15 +137,10 @@ class Vulnerabilities:
                         ),
                         name=call['name'],
                     )
-                    if call['uri'] != ""
+                    if call.get('uri', None) is not None
                     else ""
-                    for call in call_info['links']
+                    for call in call_info
                 ]
             )
             call_stack += '</ul>\n'
         return call_stack
-
-
-class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
-    def run(self, uri: str) -> None:
-        self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)

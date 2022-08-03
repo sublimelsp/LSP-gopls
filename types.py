@@ -2,11 +2,11 @@ from LSP.plugin.core.protocol import Position
 from LSP.plugin.core.typing import TypedDict, List
 
 GoplsVulnStackEntry = TypedDict(
-    "StackEntry",
+    'GoplsVulnStackEntry',
     {
-        "URI": str,
-        "Pos": Position,
-        "Name": str,
+        'URI': str,
+        'Pos': Position,
+        'Name': str,
     },
     total=True,
 )
@@ -14,19 +14,19 @@ GoplsVulnStackEntry = TypedDict(
 GoplsVulnCallStack = List[GoplsVulnStackEntry]
 
 GoplsVulnerability = TypedDict(
-    "GoplsVulnerability",
+    'GoplsVulnerability',
     {
-        "Symbol": str,
-        "CurrentVersion": str,
-        "CallStackSummaries": List[str],
-        "Aliases": List[str],
-        "Details": str,
-        "ModPath": str,
-        "PkgPath": str,
-        "ID": str,
-        "FixedVersion": str,
-        "URL": str,
-        "CallStacks": List[GoplsVulnCallStack],
+        'Symbol': str,
+        'CurrentVersion': str,
+        'CallStackSummaries': List[str],
+        'Aliases': List[str],
+        'Details': str,
+        'ModPath': str,
+        'PkgPath': str,
+        'ID': str,
+        'FixedVersion': str,
+        'URL': str,
+        'CallStacks': List[GoplsVulnCallStack],
     },
     total=True,
 )
