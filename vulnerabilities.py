@@ -3,14 +3,14 @@ import textwrap
 
 import sublime_plugin
 
-from .types import Vulnerabilities, CallStack
+from .types import GoplsVulnerabilities, GoplsVulnCallStack
 from LSP.plugin.core.typing import Optional, List
 from LSP.plugin import parse_uri
 
 import mdpopups
 
 
-class GoplsVulnerabilities:
+class Vulnerabilities:
     PANEL_NAME = 'gopls.vulnerabilities'
     CSS = textwrap.dedent(
         '''
@@ -62,7 +62,7 @@ class GoplsVulnerabilities:
     ).strip()
 
     def __init__(
-        self, window: Optional[sublime.Window], vulnerabilities: Vulnerabilities
+        self, window: Optional[sublime.Window], vulnerabilities: GoplsVulnerabilities
     ) -> None:
         self.vulnerabilities = vulnerabilities
         self.window = window or sublime.active_window()
@@ -112,7 +112,7 @@ class GoplsVulnerabilities:
             'show_panel', {'panel': 'output.{}'.format(self.PANEL_NAME)}
         )
 
-    def call_stacks_to_markdown(self, call_stacks: List[CallStack]) -> str:
+    def call_stacks_to_markdown(self, call_stacks: List[GoplsVulnCallStack]) -> str:
         call_stack = ''
         for stack in call_stacks:
             call_flow = []  # type: List[str]
