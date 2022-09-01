@@ -117,7 +117,7 @@
                     "gopls.linkTarget": {
                       "type": "string",
                       "default": "pkg.go.dev",
-                      "markdownDescription": "linkTarget controls where documentation links go.\nIt might be one of:\n\n* `\"godoc.org\"`\n* `\"pkg.go.dev\"`\n\nIf company chooses to use its own `godoc.org`, its address can be used as well.\n"
+                      "markdownDescription": "linkTarget controls where documentation links go.\nIt might be one of:\n\n* `\"godoc.org\"`\n* `\"pkg.go.dev\"`\n\nIf company chooses to use its own `godoc.org`, its address can be used as well.\n\nModules matching the GOPRIVATE environment variable will not have\ndocumentation links in hover.\n"
                     },
                     "gopls.linksInHover": {
                       "type": "boolean",
@@ -267,7 +267,7 @@
                           "default": true
                         },
                         "fieldalignment": {
-                          "markdownDescription": "find structs that would use less memory if their fields were sorted\n\nThis analyzer find structs that can be rearranged to use less memory, and provides\na suggested edit with the optimal order.\n\nNote that there are two different diagnostics reported. One checks struct size,\nand the other reports \"pointer bytes\" used. Pointer bytes is how many bytes of the\nobject that the garbage collector has to potentially scan for pointers, for example:\n\n\tstruct { uint32; string }\n\nhave 16 pointer bytes because the garbage collector has to scan up through the string's\ninner pointer.\n\n\tstruct { string; *uint32 }\n\nhas 24 pointer bytes because it has to scan further through the *uint32.\n\n\tstruct { string; uint32 }\n\nhas 8 because it can stop immediately after the string pointer.\n",
+                          "markdownDescription": "find structs that would use less memory if their fields were sorted\n\nThis analyzer find structs that can be rearranged to use less memory, and provides\na suggested edit with the most compact order.\n\nNote that there are two different diagnostics reported. One checks struct size,\nand the other reports \"pointer bytes\" used. Pointer bytes is how many bytes of the\nobject that the garbage collector has to potentially scan for pointers, for example:\n\n\tstruct { uint32; string }\n\nhave 16 pointer bytes because the garbage collector has to scan up through the string's\ninner pointer.\n\n\tstruct { string; *uint32 }\n\nhas 24 pointer bytes because it has to scan further through the *uint32.\n\n\tstruct { string; uint32 }\n\nhas 8 because it can stop immediately after the string pointer.\n\nBe aware that the most compact order is not always the most efficient.\nIn rare cases it may cause two variables each updated by its own goroutine\nto occupy the same CPU cache line, inducing a form of memory contention\nknown as \"false sharing\" that slows down both goroutines.\n",
                           "type": "boolean",
                           "default": false
                         },
@@ -366,6 +366,11 @@
                           "type": "boolean",
                           "default": true
                         },
+                        "timeformat": {
+                          "markdownDescription": "check for calls of (time.Time).Format or time.Parse with 2006-02-01\n\nThe timeformat checker looks for time formats with the 2006-02-01 (yyyy-dd-mm)\nformat. Internationally, \"yyyy-dd-mm\" does not occur in common calendar date\nstandards, and so it is more likely that 2006-01-02 (yyyy-mm-dd) was intended.\n",
+                          "type": "boolean",
+                          "default": true
+                        },
                         "unmarshal": {
                           "markdownDescription": "report passing non-pointer or non-interface values to unmarshal\n\nThe unmarshal analysis reports calls to functions such as json.Unmarshal\nin which the argument type is not a pointer or an interface.",
                           "type": "boolean",
@@ -420,6 +425,11 @@
                           "markdownDescription": "suggested fixes for \"undeclared name: <>\"\n\nThis checker provides suggested fixes for type errors of the\ntype \"undeclared name: <>\". It will either insert a new statement,\nsuch as:\n\n\"<> := \"\n\nor a new function declaration, such as:\n\nfunc <>(inferred parameters) {\n\tpanic(\"implement me!\")\n}\n",
                           "type": "boolean",
                           "default": true
+                        },
+                        "unusedvariable": {
+                          "markdownDescription": "check for unused variables\n\nThe unusedvariable analyzer suggests fixes for unused variables errors.\n",
+                          "type": "boolean",
+                          "default": false
                         },
                         "fillstruct": {
                           "markdownDescription": "note incomplete struct initializations\n\nThis analyzer provides diagnostics for any struct literals that do not have\nany fields initialized. Because the suggested fix for this analysis is\nexpensive to compute, callers should compute it separately, using the\nSuggestedFix function below.\n",
@@ -485,38 +495,38 @@
                       "default": {},
                       "markdownDescription": "(experimental) hints specify inlay hints that users want to see.\nA full list of hints that gopls uses can be found\n[here](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).\n",
                       "properties": {
-                        "assign_variable_types": {
-                          "markdownDescription": "Enable/disable inlay hints for variable types in assign statements:\n\n\ti/* int/*, j/* int/* := 0, len(r)-1",
+                        "assignVariableTypes": {
+                          "markdownDescription": "Enable/disable inlay hints for variable types in assign statements:\n```go\n\ti/* int*/, j/* int*/ := 0, len(r)-1\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "composite_literal_fields": {
-                          "markdownDescription": "Enable/disable inlay hints for composite literal field names:\n\n\t{in: \"Hello, world\", want: \"dlrow ,olleH\"}",
+                        "compositeLiteralFields": {
+                          "markdownDescription": "Enable/disable inlay hints for composite literal field names:\n```go\n\t{/*in: */\"Hello, world\", /*want: */\"dlrow ,olleH\"}\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "composite_literal_types": {
-                          "markdownDescription": "Enable/disable inlay hints for composite literal types:\n\n\tfor _, c := range []struct {\n\t\tin, want string\n\t}{\n\t\t/*struct{ in string; want string }*/{\"Hello, world\", \"dlrow ,olleH\"},\n\t}",
+                        "compositeLiteralTypes": {
+                          "markdownDescription": "Enable/disable inlay hints for composite literal types:\n```go\n\tfor _, c := range []struct {\n\t\tin, want string\n\t}{\n\t\t/*struct{ in string; want string }*/{\"Hello, world\", \"dlrow ,olleH\"},\n\t}\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "constant_values": {
-                          "markdownDescription": "Enable/disable inlay hints for constant values:\n\n\tconst (\n\t\tKindNone   Kind = iota/* = 0*/\n\t\tKindPrint/*  = 1*/\n\t\tKindPrintf/* = 2*/\n\t\tKindErrorf/* = 3*/\n\t)",
+                        "constantValues": {
+                          "markdownDescription": "Enable/disable inlay hints for constant values:\n```go\n\tconst (\n\t\tKindNone   Kind = iota/* = 0*/\n\t\tKindPrint/*  = 1*/\n\t\tKindPrintf/* = 2*/\n\t\tKindErrorf/* = 3*/\n\t)\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "function_type_parameters": {
-                          "markdownDescription": "Enable/disable inlay hints for implicit type parameters on generic functions:\n\n\tmyFoo/*[int, string]*/(1, \"hello\")",
+                        "functionTypeParameters": {
+                          "markdownDescription": "Enable/disable inlay hints for implicit type parameters on generic functions:\n```go\n\tmyFoo/*[int, string]*/(1, \"hello\")\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "parameter_names": {
-                          "markdownDescription": "Enable/disable inlay hints for parameter names:\n\n\tparseInt(/* str: */ \"123\", /* radix: */ 8)",
+                        "parameterNames": {
+                          "markdownDescription": "Enable/disable inlay hints for parameter names:\n```go\n\tparseInt(/* str: */ \"123\", /* radix: */ 8)\n```",
                           "type": "boolean",
                           "default": false
                         },
-                        "range_variable_types": {
-                          "markdownDescription": "Enable/disable inlay hints for variable types in range statements:\n\n\tfor k/* int*/, v/* string/* := range []string{} {\n\t\tfmt.Println(k, v)\n\t}",
+                        "rangeVariableTypes": {
+                          "markdownDescription": "Enable/disable inlay hints for variable types in range statements:\n```go\n\tfor k/* int*/, v/* string*/ := range []string{} {\n\t\tfmt.Println(k, v)\n\t}\n```",
                           "type": "boolean",
                           "default": false
                         }
@@ -549,6 +559,11 @@
                           "type": "boolean",
                           "default": true
                         },
+                        "run_vulncheck_exp": {
+                          "markdownDescription": "Run vulnerability check (`govulncheck`).",
+                          "type": "boolean",
+                          "default": false
+                        },
                         "test": {
                           "markdownDescription": "Runs `go test` for a specific set of test or benchmark functions.",
                           "type": "boolean",
@@ -575,6 +590,16 @@
                       "type": "boolean",
                       "default": false,
                       "markdownDescription": "(experimental) semanticTokens controls whether the LSP server will send\nsemantic tokens to the client.\n"
+                    },
+                    "gopls.noSemanticString": {
+                      "type": "boolean",
+                      "default": false,
+                      "markdownDescription": "(experimental) noSemanticString turns off the sending of the semantic token 'string'\n"
+                    },
+                    "gopls.noSemanticNumber": {
+                      "type": "boolean",
+                      "default": false,
+                      "markdownDescription": "(experimental) noSemanticNumber  turns off the sending of the semantic token 'number'\n"
                     },
                     "gopls.local": {
                       "type": "string",
