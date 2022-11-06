@@ -22,15 +22,19 @@
     // the last filter that applies to a path controls whether it is included.
     // The path prefix can be empty, so an initial `-` excludes everything.
     //
+    // DirectoryFilters also supports the `**` operator to match 0 or more directories.
+    //
     // Examples:
     //
-    // Exclude node_modules: `-node_modules`
+    // Exclude node_modules at current depth: `-node_modules`
+    //
+    // Exclude node_modules at any depth: `-**/node_modules`
     //
     // Include only project_a: `-` (exclude everything), `+project_a`
     //
     // Include only project_a, but not node_modules inside it: `-`, `+project_a`, `-project_a/node_modules`
     "gopls.directoryFilters": [
-      "-node_modules"
+      "-**/node_modules"
     ],
     // templateExtensions gives the extensions of file names that are treateed
     // as template files. (The extension
@@ -50,6 +54,9 @@
     "gopls.expandWorkspaceToModule": true,
     // (experimental) experimentalWorkspaceModule opts a user into the experimental support
     // for multi-module workspaces.
+    //
+    // Deprecated: this feature is deprecated and will be removed in a future
+    // version of gopls (https://go.dev/issue/55331).
     "gopls.experimentalWorkspaceModule": false,
     // (experimental) experimentalPackageCacheKey controls whether to use a coarser cache key
     // for package type information to increase cache hits. This setting removes
@@ -68,9 +75,32 @@
     "gopls.allowImplicitNetworkAccess": false,
     // (experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated
     // package metadata to provide editor features if the go command fails to
-    // load packages for some reason (like an invalid go.mod file). This will
-    // eventually be the default behavior, and this setting will be removed.
+    // load packages for some reason (like an invalid go.mod file).
+    //
+    // Deprecated: this setting is deprecated and will be removed in a future
+    // version of gopls (https://go.dev/issue/55333).
     "gopls.experimentalUseInvalidMetadata": false,
+    // standaloneTags specifies a set of build constraints that identify
+    // individual Go source files that make up the entire main package of an
+    // executable.
+    //
+    // A common example of standalone main files is the convention of using the
+    // directive `//go:build ignore` to denote files that are not intended to be
+    // included in any package, for example because they are invoked directly by
+    // the developer using `go run`.
+    //
+    // Gopls considers a file to be a standalone main file if and only if it has
+    // package name "main" and has a build directive of the exact form
+    // "//go:build tag" or "// +build tag", where tag is among the list of tags
+    // configured by this setting. Notably, if the build constraint is more
+    // complicated than a simple tag (such as the composite constraint
+    // `//go:build tag && go1.18`), the file is not considered to be a standalone
+    // main file.
+    //
+    // This setting is only supported when gopls is built with Go 1.16 or later.
+    "gopls.standaloneTags": [
+      "ignore"
+    ],
     // hoverKind controls the information that appears in the hover text.
     // SingleLine and Structured are intended for use only by authors of editor plugins.
     "gopls.hoverKind": "FullDocumentation",
@@ -121,8 +151,8 @@
     "gopls.symbolStyle": "Dynamic",
     // analyses specify analyses that the user would like to enable or disable.
     // A map of the names of analysis passes that should be enabled/disabled.
-    // A full list of analyzers that gopls uses can be found
-    // [here](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).
+    // A full list of analyzers that gopls uses can be found in
+    // [analyzers.md](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).
     //
     // Example Usage:
     //
@@ -136,6 +166,8 @@
     // ```
     "gopls.analyses": {},
     // (experimental) staticcheck enables additional analyses from staticcheck.io.
+    // These analyses are documented on
+    // [Staticcheck's website](https://staticcheck.io/docs/checks/).
     "gopls.staticcheck": false,
     // (experimental) annotations specifies the various kinds of optimization diagnostics
     // that should be reported by the gc_details command.
@@ -159,10 +191,13 @@
     // file system notifications.
     //
     // This option must be set to a valid duration string, for example `"100ms"`.
+    //
+    // Deprecated: this setting is deprecated and will be removed in a future
+    // version of gopls (https://go.dev/issue/55332)
     "gopls.experimentalWatchedFileDelay": "0s",
-    // (experimental) hints specify inlay hints that users want to see.
-    // A full list of hints that gopls uses can be found
-    // [here](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).
+    // (experimental) hints specify inlay hints that users want to see. A full list of hints
+    // that gopls uses can be found in
+    // [inlayHints.md](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).
     "gopls.hints": {},
     // codelenses overrides the enabled/disabled state of code lenses. See the
     // "Code Lenses" section of the
