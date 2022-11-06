@@ -3,12 +3,12 @@
 import sublime
 import sublime_plugin
 
-
 from .types import GoplsVulnerabilities
 from .vulnerabilities import Vulnerabilities
 
 from LSP.plugin import (
     AbstractPlugin,
+    LspTextCommand,
     Session,
     Request,
     parse_uri,
@@ -24,7 +24,6 @@ from LSP.plugin.core.typing import (
     List,
     Union,
 )
-from LSP.plugin.core.registry import LspTextCommand
 from LSP.plugin.core.views import uri_from_view
 
 from shutil import which
