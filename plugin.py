@@ -39,8 +39,8 @@ except ImportError:
 
 '''
 Current version of gopls that the plugin installs
-Review gopls settings when updating TAG to see if
-new settings exist
+Re-run scripts/update-schema-settings.py to update gopls settings when updating 
+TAG.
 '''
 TAG = '0.10.1'
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
@@ -276,7 +276,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         session.send_request(
             Request(
                 'workspace/executeCommand',
-                {'command': 'gopls.run_vulncheck_exp', 'arguments': [{'dir': path}]},
+                {'command': 'gopls.run_vulncheck_exp', 'arguments': [{'uri': path + '/...'}]},
             ),
             on_result=lambda x: self.show_results_async(x.get('Vuln')),
         )
