@@ -8,7 +8,7 @@
         },
     },
     {
-        "caption": "LSP-gopls: Run Vuln Check (Experimental)",
+        "caption": "LSP-gopls: Run Vuln Check",
         "command": "gopls_run_vuln_check"
     },
 ]
