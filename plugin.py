@@ -276,7 +276,7 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         session.send_request(
             Request(
                 'workspace/executeCommand',
-                {'command': 'gopls.run_vulncheck', 'arguments': [{'uri': path + '/...'}]},
+                {'command': 'gopls.run_vulncheck', 'arguments': [{'uri': os.path.join(path, '/...')}]},
             ),
             on_result=lambda x: self.show_results_async(x.get('Vuln')),
         )
