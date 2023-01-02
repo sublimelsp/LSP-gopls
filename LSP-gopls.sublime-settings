@@ -73,13 +73,6 @@
     // downloads rather than requiring user action. This option will eventually
     // be removed.
     "gopls.allowImplicitNetworkAccess": false,
-    // (experimental) experimentalUseInvalidMetadata enables gopls to fall back on outdated
-    // package metadata to provide editor features if the go command fails to
-    // load packages for some reason (like an invalid go.mod file).
-    //
-    // Deprecated: this setting is deprecated and will be removed in a future
-    // version of gopls (https://go.dev/issue/55333).
-    "gopls.experimentalUseInvalidMetadata": false,
     // standaloneTags specifies a set of build constraints that identify
     // individual Go source files that make up the entire main package of an
     // executable.
@@ -177,6 +170,8 @@
       "inline": true,
       "nil": true
     },
+    // (experimental) vulncheck enables vulnerability scanning.
+    "gopls.vulncheck": "Off",
     // (advanced) diagnosticsDelay controls the amount of time that gopls waits
     // after the most recent file modification before computing deep diagnostics.
     // Simple diagnostics (parsing and type-checking) are always run immediately
