@@ -1,3 +1,5 @@
+#! /usr/local/bin/python3
+
 from typing import Union, Dict
 import subprocess
 import json
@@ -92,7 +94,8 @@ BEGIN_LSP_GOPLS_SETTINGS = '''// Packages/User/LSP-gopls.sublime-settings
 PREFIX_LSP_GOPLS_SETTINGS = '    '
 END_LSP_GOPLS_SETTINGS = '''
   }
-}'''
+}
+'''
 
 
 class GoplsGenerator:
@@ -152,7 +155,7 @@ class GoplsGenerator:
                         json.loads(enum['Value'])
                     )
                     self.properties[current_key]['markdownEnumDescriptions'].append(
-                        enum.get('Doc', '')
+                        enum.get('Doc', '').removeprefix('`{}`: '.format(enum['Value']))
                     )
             elif current_type == 'object':
                 self.properties[current_key]['properties'] = {}
@@ -200,7 +203,7 @@ class GoplsGenerator:
 
     def write_schema_out(self, path: str):
         with open(path, 'w') as outfile:
-            outfile.write(json.dumps(self.schema, indent=2))
+            outfile.write(json.dumps(self.schema, indent=2) + '\n')
 
     def write_settings_out(self, path: str):
         with open(path, 'w') as outfile:
@@ -213,13 +216,13 @@ def main():
     if sublime_package_schema is None:
         return
 
-    processor.write_schema_out('../sublime-package.json')
+    processor.write_schema_out('./sublime-package.json')
 
     settings = processor.generate_lsp_settings()
     if settings == '':
         return None
 
-    processor.write_settings_out('../LSP-gopls.sublime-settings')
+    processor.write_settings_out('./LSP-gopls.sublime-settings')
 
 
 main()
