@@ -101,5 +101,5 @@ class GoplsStartDebuggingCommand(GoplsCommand):
             return
 
         sublime.message_dialog(
-            'Debug session started on port {port}'.format(port=session)
+            'Debug session started on port(s):\n{port}'.format(port='\t{url}\n'.join(session['URL']))
         )

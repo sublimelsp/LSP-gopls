@@ -1,4 +1,3 @@
-import sublime
 
 from .commands import (
     GoplsOpenFileCommand,
@@ -13,12 +12,11 @@ from LSP.plugin import (
 from .plugin import Gopls
 
 __all__ = (
-    # ST: core
-    'sublime', # Why is this needed
+    # ST: Core
     'plugin_loaded',
     'plugin_unloaded',
 
-    # ST: commands=
+    # ST: commands
     'GoplsOpenFileCommand',
     'GoplsStartDebuggingCommand',
     'GoplsRunVulnCheckCommand',
