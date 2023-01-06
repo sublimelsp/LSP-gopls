@@ -213,13 +213,13 @@ def main():
     if sublime_package_schema is None:
         return
 
-    processor.write_schema_out('../sublime-package.json')
+    processor.write_schema_out('sublime-package.json')
 
     settings = processor.generate_lsp_settings()
     if settings == '':
         return None
 
-    processor.write_settings_out('../LSP-gopls.sublime-settings')
+    processor.write_settings_out('LSP-gopls.sublime-settings')
 
 
 main()
