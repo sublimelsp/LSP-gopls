@@ -41,6 +41,8 @@ jobs:
             requires_update=1
           fi
 
+          echo $requires_update
+
           latest_tag=${latest_tag//./_}
 
   updateVersion:
