@@ -1,8 +1,9 @@
 name: Gopls Update Checker
 
 on:
-  schedule:
-    - cron: "0 */48 * * *"
+  [push]
+  # schedule:
+  #   - cron: "0 */48 * * *"
 
 jobs:
   compareTag:
