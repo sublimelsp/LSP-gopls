@@ -29,6 +29,7 @@ jobs:
 
           # Remove the prefix "gopls/" from the latest tag
           latest_tag=${latest_tag#"gopls/v"}
+          version=$(cat VERSION | tr -d '\n')
 
           # Check if update is required
           if [ "$latest_tag" = "$version" ]; then
