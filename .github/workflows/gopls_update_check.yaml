@@ -55,11 +55,11 @@ jobs:
           fetch-depth: 0
       - name: Update VERSION
         run: |
-          echo "${{ needs.compareTag.outputs.latest_tag }}" > VERSION
+          echo "${{ needs.compareTag.outputs.latest_tag//_/. }}" > VERSION
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: update to latest gopls version ${{ needs.compareTag.outputs.latest_tag }}
-          title: Update VERSION
+          commit-message: update to latest gopls version ${{ needs.compareTag.outputs.latest_tag//_/. }}
+          title: Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag//_/. }}
           body: Credit new contributors by updating VERSION
           branch: update/gopls_v${{ needs.compareTag.outputs.latest_tag }}
