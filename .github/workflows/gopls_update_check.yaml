@@ -1,0 +1,57 @@
+name: Gopls Update Checker
+
+on:
+  schedule:
+    - cron: "0 */48 * * *"
+
+jobs:
+  compareTag:
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: $latest_tag
+      requires_update: $requires_update
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run script
+        run: |
+          #!/bin/bash
+
+          # Set the URL for the GitHub API
+          url="https://api.github.com/repos/golang/tools/tags"
+
+          # Call the GitHub API and retrieve the tags
+          tags=$(curl -s $url)
+
+          # Find the latest tag that matches the regex pattern
+          latest_tag=$(echo $tags | grep -o "gopls/v[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -1)
+
+          # Remove the prefix "gopls/" from the latest tag
+          latest_tag=${latest_tag#"gopls/v"}
+
+          # Check if update is required
+          if [ "$latest_tag" = "$version" ]; then
+            requires_update=0
+          else
+            requires_update=1
+          fi
+
+          latest_tag=${latest_tag//./_}
+
+  updateVersion:
+    if: ${{ steps.build.outputs.requires_update }} == 1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Update VERSION
+        run: |
+          echo "${{ steps.build.outputs.latest_tag }}" > VERSION
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: update to latest gopls version ${{ steps.build.outputs.latest_tag }}
+          title: Update VERSION
+          body: Credit new contributors by updating VERSION
+          branch: update/gopls_v${{ steps.build.outputs.latest_tag }}
