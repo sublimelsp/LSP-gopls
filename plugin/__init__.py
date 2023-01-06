@@ -1,9 +1,9 @@
 
 from .commands import (
     GoplsOpenFileCommand,
+    GoplsStartDebuggingCommand,
     GoplsRunVulnCheckCommand,
     )
-
 from LSP.plugin import (
     register_plugin,
     unregister_plugin,
@@ -18,6 +18,7 @@ __all__ = (
 
     # ST: commands
     'GoplsOpenFileCommand',
+    'GoplsStartDebuggingCommand',
     'GoplsRunVulnCheckCommand',
     )
 

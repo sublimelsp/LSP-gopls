@@ -78,3 +78,28 @@ class GoplsRunVulnCheckCommand(GoplsCommand):
         Vulnerabilities(
             window=self.view.window(), vulnerabilities=vulnerabilities
         ).show()
+
+
+
+class GoplsStartDebuggingCommand(GoplsCommand):
+    def run(self, _: sublime.Edit) -> None:
+        session = self.session_by_name(self.session_name)
+        if session is None:
+            return
+
+        session.send_request(
+            Request(
+                'workspace/executeCommand',
+                {'command': 'gopls.start_debugging', 'arguments': [{}]},
+            ),
+            on_result=lambda x: self.show_results_async(x),
+        )
+
+    def show_results_async(self, session) -> None:
+        if session is None:
+            sublime.message_dialog('No debug session started')
+            return
+
+        sublime.message_dialog(
+            'Debug session started on port(s):\n{port}'.format(port='\t{url}\n'.join(session['URL']))
+        )

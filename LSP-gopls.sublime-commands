@@ -8,6 +8,10 @@
         },
     },
     {
+        "caption": "LSP-gopls: Start Debug Server",
+        "command": "gopls_start_debugging"
+    },
+    {
         "caption": "LSP-gopls: Run Vuln Check",
         "command": "gopls_run_vuln_check"
     },
