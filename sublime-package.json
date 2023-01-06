@@ -61,7 +61,7 @@
                         "Normal"
                       ],
                       "markdownEnumDescriptions": [
-                        "`\"DegradeClosed\"`: In DegradeClosed mode, `gopls` will collect less information about\npackages without open files. As a result, features like Find\nReferences and Rename will miss results in such packages.\n",
+                        "In DegradeClosed mode, `gopls` will collect less information about\npackages without open files. As a result, features like Find\nReferences and Rename will miss results in such packages.\n",
                         ""
                       ]
                     },
@@ -491,8 +491,8 @@
                         "Off"
                       ],
                       "markdownEnumDescriptions": [
-                        "`\"Imports\"`: In Imports mode, `gopls` will report vulnerabilities that affect packages\ndirectly and indirectly used by the analyzed main module.\n",
-                        "`\"Off\"`: Disable vulnerability analysis.\n"
+                        "In Imports mode, `gopls` will report vulnerabilities that affect packages\ndirectly and indirectly used by the analyzed main module.\n",
+                        "Disable vulnerability analysis.\n"
                       ]
                     },
                     "gopls.diagnosticsDelay": {

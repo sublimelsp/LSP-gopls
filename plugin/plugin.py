@@ -1,19 +1,12 @@
-# Packages/LSP-gopls/plugin.py
+# Packages/LSP-gopls/plugin/plugin.py
+import os
 
 import sublime
-import sublime_plugin
-
-from .types import GoplsVulnerabilities
-from .vulnerabilities import Vulnerabilities
 
 from LSP.plugin import (
     AbstractPlugin,
-    LspTextCommand,
     Session,
-    Request,
     parse_uri,
-    register_plugin,
-    unregister_plugin,
 )
 from LSP.plugin.core.typing import (
     Any,
@@ -22,32 +15,26 @@ from LSP.plugin.core.typing import (
     Mapping,
     Callable,
     List,
-    Union,
 )
-from LSP.plugin.core.views import uri_from_view
 
-from shutil import which
-import subprocess
-import tempfile
-import os
-import re
+from .constants import (
+    TAG,
+    GOPLS_BASE_URL,
+    RE_VER,
+)
+from .utils import (
+    get_setting,
+    to_int,
+    is_binary_available,
+    run_go_command,
+)
+
 
 try:
     import Terminus  # type: ignore
 except ImportError:
     Terminus = None
 
-'''
-Current version of gopls that the plugin installs
-Re-run scripts/update-schema-settings.py to update gopls settings when updating 
-TAG.
-'''
-TAG = '0.11.0'
-GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
-
-RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
-
-SESSION_NAME = 'gopls'
 
 
 def open_tests_in_terminus(
@@ -115,11 +102,11 @@ class Gopls(AbstractPlugin):
         )
         if sublime.platform() == 'windows' and not gopls_binary.endswith('.exe'):
             gopls_binary = gopls_binary + '.exe'
-        return _is_binary_available(gopls_binary)
+        return is_binary_available(gopls_binary)
 
     @classmethod
     def _is_go_installed(cls) -> bool:
-        return _is_binary_available('go')
+        return is_binary_available('go')
 
     @classmethod
     def _get_go_version(cls) -> Tuple[int, int, int]:
@@ -196,129 +183,3 @@ class Gopls(AbstractPlugin):
             except Exception as ex:
                 print('Exception handling command {}: {}'.format(command_name, ex))
         return False
-
-
-def run_go_command(
-    env_vars: dict,
-    sub_command: str = 'install',
-    url: Optional[str] = None,
-) -> Tuple[str, str, int]:
-    startupinfo = None
-    if sublime.platform() == 'windows':
-        startupinfo = subprocess.STARTUPINFO()  # type: ignore
-        startupinfo.dwFlags |= subprocess.SW_HIDE | subprocess.STARTF_USESHOWWINDOW  # type: ignore
-
-    cmd = ['go', sub_command]
-    if url is not None:
-        cmd.append(url)
-
-    with tempfile.TemporaryDirectory() as tempdir:
-        env_vars['GOTMPDIR'] = tempdir
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            env=env_vars,
-            universal_newlines=True,
-            startupinfo=startupinfo,
-        )
-        stdout, stderr = process.communicate()
-    return (
-        stdout,
-        stderr,
-        process.returncode,
-    )
-
-
-class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
-    def run(self, uri: str) -> None:
-        self.window.open_file('{uri}'.format(uri=uri), sublime.ENCODED_POSITION)
-
-
-class GoplsCommand(LspTextCommand):
-    session_name = SESSION_NAME
-
-
-class GoplsRunVulnCheckCommand(GoplsCommand):
-    def run(self, edit: sublime.Edit) -> None:
-        self.edit = edit
-        session = self.session_by_name(self.session_name)
-        if session is None:
-            return
-
-        view = self.view
-        if not view:
-            return
-
-        folders = session.get_workspace_folders()
-        if len(folders) < 1:
-            path = os.path.dirname(uri_from_view(self.view))
-            self.run_gopls_vulncheck(path)
-        elif len(folders) == 1:
-            self.run_gopls_vulncheck(folders[0].uri())
-        else:
-            window = self.view.window()
-            if not window:
-                return
-            window.show_quick_panel(
-                [
-                    sublime.QuickPanelItem(folder.name, folder.uri())
-                    for folder in folders
-                ],
-                on_select=lambda x: self.run_gopls_vulncheck(folders[x].uri()) if x != -1 else None,
-            )
-
-    def run_gopls_vulncheck(self, path: str) -> None:
-        session = self.session_by_name(self.session_name)
-        if session is None:
-            return
-
-        session.send_request(
-            Request(
-                'workspace/executeCommand',
-                # TODO(@TerminalFi): Investigate other ways to run the vulncheck.
-                {'command': 'gopls.run_govulncheck', 'arguments': [{'uri': '{0}/...'.format(path)}]},
-            ),
-            on_result=lambda x: self.show_results_async(x.get('Vuln')),
-        )
-
-    def show_results_async(
-        self, vulnerabilities: Optional[GoplsVulnerabilities]
-    ) -> None:
-        if vulnerabilities is None:
-            sublime.message_dialog('No vulnerabilities found')
-            return
-
-        Vulnerabilities(
-            window=self.view.window(), vulnerabilities=vulnerabilities
-        ).show()
-
-
-def to_int(value: Optional[str]) -> int:
-    if value is None:
-        return 0
-    return int(value)
-
-
-def _is_binary_available(path) -> bool:
-    return bool(which(path))
-
-
-def get_setting(
-    session: Session,
-    key: str,
-    default: Optional[Union[str, bool, List[str]]] = None,
-) -> Any:
-    value = session.config.settings.get(key)
-    if value is None:
-        return default
-
-    return value
-
-
-def plugin_loaded():
-    register_plugin(Gopls)
-
-
-def plugin_unloaded():
-    unregister_plugin(Gopls)
