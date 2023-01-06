@@ -13,7 +13,7 @@ jobs:
       requires_update: $requires_update
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run script
         run: |
           #!/bin/bash
@@ -46,7 +46,6 @@ jobs:
           latest_tag=${latest_tag//./_}
 
   updateVersion:
-    if: needs.version.compareTag.outputs.requires_update == 1
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -54,11 +53,11 @@ jobs:
           fetch-depth: 0
       - name: Update VERSION
         run: |
-          echo "${{ steps.build.outputs.latest_tag }}" > VERSION
+          echo "${{ needs.version.outputs.latest_tag }}" > VERSION
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
         with:
-          commit-message: update to latest gopls version ${{ steps.build.outputs.latest_tag }}
+          commit-message: update to latest gopls version ${{ needs.version.outputs.latest_tag }}
           title: Update VERSION
           body: Credit new contributors by updating VERSION
-          branch: update/gopls_v${{ steps.build.outputs.latest_tag }}
+          branch: update/gopls_v${{ needs.version.outputs.latest_tag }}
