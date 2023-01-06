@@ -42,7 +42,11 @@ Current version of gopls that the plugin installs
 Re-run scripts/update-schema-settings.py to update gopls settings when updating 
 TAG.
 '''
-TAG = '0.11.0'
+TAG = ''
+
+with open('VERSION', 'r') as f:
+  TAG = f.read()
+
 GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
 
 RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
@@ -152,6 +156,8 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
+        if TAG == '':
+            return False
         return not cls._is_gopls_installed() or (
             cls.server_version() != cls.current_server_version()
         )
