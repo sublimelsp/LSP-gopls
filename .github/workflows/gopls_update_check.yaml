@@ -58,6 +58,7 @@ jobs:
       - name: Update VERSION
         run: |
           echo "${{ needs.compareTag.outputs.latest_tag }}" | sed s/\_/\./g > VERSION
+          echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" | sed s/\_/\./g > plugin/version.py
       - name: Update Schema and Settings
         run: |
           python ./scripts/update-schema-settings.py
@@ -67,5 +68,10 @@ jobs:
           commit-message: update to latest gopls version ${{ needs.compareTag.outputs.latest_tag }}
           title: Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag }}
           labels: auto-update
-          body: Credit new contributors by updating VERSION
+          body: |
+            Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag }}
+            - [x] Updated `VERSION` and `plugin/version.py`
+            - [x] Updated `schema.json` and `settings.json`
+            - [x] Updated `VERSION`
+            - [ ] Reviewed changes
           branch: update/gopls_v${{ needs.compareTag.outputs.latest_tag }}

@@ -21,6 +21,7 @@ from .constants import (
     TAG,
     GOPLS_BASE_URL,
     RE_VER,
+    SESSION_NAME
 )
 from .utils import (
     get_setting,
@@ -34,22 +35,6 @@ try:
     import Terminus  # type: ignore
 except ImportError:
     Terminus = None
-
-'''
-Current version of gopls that the plugin installs
-Re-run scripts/update-schema-settings.py to update gopls settings when updating 
-TAG.
-'''
-TAG = ''
-
-with open('VERSION', 'r') as f:
-  TAG = f.read()
-
-GOPLS_BASE_URL = 'golang.org/x/tools/gopls@v{tag}'
-
-RE_VER = re.compile(r'go(\d+)\.(\d+)(?:\.(\d+))?')
-
-SESSION_NAME = 'gopls'
 
 
 def open_tests_in_terminus(
@@ -89,7 +74,7 @@ def open_tests_in_terminus(
 class Gopls(AbstractPlugin):
     @classmethod
     def name(cls):
-        return 'gopls'
+        return SESSION_NAME
 
     @classmethod
     def basedir(cls) -> str:
