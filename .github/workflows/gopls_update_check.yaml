@@ -1,0 +1,75 @@
+name: Gopls Update Checker
+
+on:
+  schedule:
+    - cron: "0 0 */7 * *"
+
+jobs:
+  compareTag:
+    runs-on: ubuntu-latest
+    outputs:
+      latest_tag: ${{ steps.tagCompare.outputs.LATEST_TAG }}
+      requires_update: ${{ steps.tagCompare.outputs.REQUIRES_UPDATE }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - id: tagCompare
+        name: Run script
+        run: |
+          #!/bin/bash
+
+          # Set the URL for the GitHub API
+          url="https://api.github.com/repos/golang/tools/tags"
+
+          # Call the GitHub API and retrieve the tags
+          tags=$(curl -s $url)
+
+          # Find the latest tag that matches the regex pattern
+          latest_tag=$(echo $tags | grep -o "gopls/v[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -1)
+
+          # Remove the prefix "gopls/" from the latest tag
+          latest_tag=${latest_tag#"gopls/v"}
+          version=$(grep -oE "\d+\.\d+\.\d+" plugin/version.py | tr -d '\n')
+
+          # Check if update is required
+          if [ "$latest_tag" = "$version" ]; then
+            requires_update=0
+          else
+            requires_update=1
+          fi
+
+          latest_tag=${latest_tag//./_}
+
+          echo "REQUIRES_UPDATE=$requires_update" >>$GITHUB_OUTPUT
+          echo "LATEST_TAG=$latest_tag" >>$GITHUB_OUTPUT
+
+  updateVersion:
+    needs:
+      - compareTag
+    if: needs.compareTag.outputs.requires_update == 1
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10" # The version of Python to download (if necessary) and use.
+      - name: Update VERSION
+        run: |
+          echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" | sed s/\_/\./g > plugin/version.py
+      - name: Update Schema and Settings
+        run: |
+          python ./scripts/update-schema-settings.py
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: update to latest gopls version ${{ needs.compareTag.outputs.latest_tag }}
+          title: Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag }}
+          labels: auto-update
+          body: |
+            Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag }}
+            - [x] Updated `plugin/version.py`
+            - [x] Updated `schema` and `settings`
+            - [ ] Reviewed changes
+          branch: update/gopls_v${{ needs.compareTag.outputs.latest_tag }}
