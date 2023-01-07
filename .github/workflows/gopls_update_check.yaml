@@ -29,7 +29,7 @@ jobs:
 
           # Remove the prefix "gopls/" from the latest tag
           latest_tag=${latest_tag#"gopls/v"}
-          version=$(cat VERSION | tr -d '\n')
+          version=$(grep -oE "\d+\.\d+\.\d+" plugin/version.py | tr -d '\n')
 
           # Check if update is required
           if [ "$latest_tag" = "$version" ]; then
@@ -57,7 +57,6 @@ jobs:
           python-version: "3.10" # The version of Python to download (if necessary) and use.
       - name: Update VERSION
         run: |
-          echo "${{ needs.compareTag.outputs.latest_tag }}" | sed s/\_/\./g > VERSION
           echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" | sed s/\_/\./g > plugin/version.py
       - name: Update Schema and Settings
         run: |
@@ -70,8 +69,7 @@ jobs:
           labels: auto-update
           body: |
             Update VERSION to Gopls v${{ needs.compareTag.outputs.latest_tag }}
-            - [x] Updated `VERSION` and `plugin/version.py`
-            - [x] Updated `schema.json` and `settings.json`
-            - [x] Updated `VERSION`
+            - [x] Updated `plugin/version.py`
+            - [x] Updated `schema` and `settings`
             - [ ] Reviewed changes
           branch: update/gopls_v${{ needs.compareTag.outputs.latest_tag }}

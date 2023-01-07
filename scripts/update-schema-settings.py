@@ -225,7 +225,7 @@ def main():
     if settings == '':
         return None
 
-    processor.write_settings_out(os.path.join(PACKAGE_PATH, '/LSP-gopls.sublime-settings'))
+    processor.write_settings_out(os.path.join(PACKAGE_PATH, 'LSP-gopls.sublime-settings'))
 
 
 main()
