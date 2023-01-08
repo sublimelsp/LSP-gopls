@@ -10,38 +10,77 @@ jobs:
     outputs:
       latest_tag: ${{ steps.tagCompare.outputs.LATEST_TAG }}
       requires_update: ${{ steps.tagCompare.outputs.REQUIRES_UPDATE }}
+      branch_name: ${{ steps.tagCompare.outputs.BRANCH_NAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - id: tagCompare
         name: Run script
+        shell: python {0}
         run: |
-          #!/bin/bash
+          import re
+          import json
+          import os
+          from typing import Literal
+
+          import requests
 
           # Set the URL for the GitHub API
-          url="https://api.github.com/repos/golang/tools/tags"
+          url = "https://api.github.com/repos/golang/tools/tags"
 
-          # Call the GitHub API and retrieve the tags
-          tags=$(curl -s $url)
+          try:
+              # Call the GitHub API and retrieve the tags
+              response = requests.get(url)
+              response.raise_for_status()
+              tags = json.loads(response.text)
+          except requests.RequestException as e:
+              print(f"Error while fetching tags from GitHub API: {e}")
+              exit(1)
 
-          # Find the latest tag that matches the regex pattern
-          latest_tag=$(echo $tags | grep -o "gopls/v[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -1)
+          latest_version = None
+          for tag in tags:
+              if tag['name'].startswith('gopls/v'):
+                  latest_version = tag['name'].split('v')[1]
+                  break
 
-          # Remove the prefix "gopls/" from the latest tag
-          latest_tag=${latest_tag#"gopls/v"}
-          version=$(grep -oE "\d+\.\d+\.\d+" plugin/version.py | tr -d '\n')
+          if latest_version is None:
+              print("Could not find latest version from tags.")
+              exit(1)
+
+          version = None
+          try:
+              with open("plugin/version.py", "r") as f:
+                  groups = re.search(r"\d+\.\d+\.\d+", f.read())
+                  if groups is None:
+                      raise ValueError("Could not find version in plugin/version.py.")
+                  version = groups.group(0)
+          except (IOError, ValueError) as e:
+              print(f"Error while reading plugin/version.py: {e}")
+              exit(1)
+
+          def compare_semantic_versions(v1: str, v2: str) -> Literal[0, 1]:
+              # Split the versions into lists of integers
+              v1_parts = [int(x) for x in v1.split(".")]
+              v2_parts = [int(x) for x in v2.split(".")]
+
+              # Compare each part of the version
+              for i in range(min(len(v1_parts), len(v2_parts))):
+                  if v1_parts[i] > v2_parts[i]:
+                      return 0
+                  elif v1_parts[i] < v2_parts[i]:
+                      return 1
+
+              # If all parts are equal, return 1 if v2 has more parts
+              return 1 if len(v2_parts) > len(v1_parts) else 0
 
           # Check if update is required
-          if [ "$latest_tag" = "$version" ]; then
-            requires_update=0
-          else
-            requires_update=1
-          fi
+          requires_update = compare_semantic_versions(version, latest_version)
+          branch_name = latest_version.replace(".", "_")
 
-          latest_tag=${latest_tag//./_}
-
-          echo "REQUIRES_UPDATE=$requires_update" >>$GITHUB_OUTPUT
-          echo "LATEST_TAG=$latest_tag" >>$GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+              print(f'REQUIRES_UPDATE={requires_update}', file=fh)
+              print(f'LATEST_VERSION={latest_version}', file=fh)
+              print(f'BRANCH_NAME={branch_name}', file=fh)
 
   updateVersion:
     needs:
