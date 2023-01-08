@@ -17,10 +17,11 @@ from LSP.plugin.core.typing import (
     List,
 )
 
+from .version import VERSION
 from .constants import (
-    TAG,
     GOPLS_BASE_URL,
     RE_VER,
+    SESSION_NAME
 )
 from .utils import (
     get_setting,
@@ -34,7 +35,6 @@ try:
     import Terminus  # type: ignore
 except ImportError:
     Terminus = None
-
 
 
 def open_tests_in_terminus(
@@ -74,7 +74,7 @@ def open_tests_in_terminus(
 class Gopls(AbstractPlugin):
     @classmethod
     def name(cls):
-        return 'gopls'
+        return SESSION_NAME
 
     @classmethod
     def basedir(cls) -> str:
@@ -82,7 +82,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def server_version(cls) -> str:
-        return TAG
+        return VERSION
 
     @classmethod
     def current_server_version(cls) -> Optional[str]:
@@ -154,7 +154,7 @@ class Gopls(AbstractPlugin):
         go_sub_command = 'get' if go_version < (1, 16, 0) else 'install'
         _, stderr, return_code = run_go_command(
             sub_command=go_sub_command,
-            url=GOPLS_BASE_URL.format(tag=TAG),
+            url=GOPLS_BASE_URL.format(tag=VERSION),
             env_vars=cls._set_env_vars(),
         )
         if return_code != 0:
