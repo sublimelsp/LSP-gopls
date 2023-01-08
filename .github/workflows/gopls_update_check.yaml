@@ -23,17 +23,18 @@ jobs:
           import os
           from typing import Literal
 
-          import requests
+          import urllib.request
 
           # Set the URL for the GitHub API
           url = "https://api.github.com/repos/golang/tools/tags"
 
+          tags = None
           try:
               # Call the GitHub API and retrieve the tags
-              response = requests.get(url)
-              response.raise_for_status()
-              tags = json.loads(response.text)
-          except requests.RequestException as e:
+              with urllib.request.urlopen(url) as f:
+                  tags_str = f.read().decode('utf-8')
+              tags = json.loads(tags_str)
+          except urllib.error.URLError as e:
               print(f"Error while fetching tags from GitHub API: {e}")
               exit(1)
 
