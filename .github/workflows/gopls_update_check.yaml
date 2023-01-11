@@ -10,38 +10,13 @@ jobs:
     outputs:
       latest_tag: ${{ steps.tagCompare.outputs.LATEST_TAG }}
       requires_update: ${{ steps.tagCompare.outputs.REQUIRES_UPDATE }}
+      branch_name: ${{ steps.tagCompare.outputs.BRANCH_NAME }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
       - id: tagCompare
         name: Run script
-        run: |
-          #!/bin/bash
-
-          # Set the URL for the GitHub API
-          url="https://api.github.com/repos/golang/tools/tags"
-
-          # Call the GitHub API and retrieve the tags
-          tags=$(curl -s $url)
-
-          # Find the latest tag that matches the regex pattern
-          latest_tag=$(echo $tags | grep -o "gopls/v[0-9]\+\.[0-9]\+\.[0-9]\+" | sort -V | tail -1)
-
-          # Remove the prefix "gopls/" from the latest tag
-          latest_tag=${latest_tag#"gopls/v"}
-          version=$(grep -oE "\d+\.\d+\.\d+" plugin/version.py | tr -d '\n')
-
-          # Check if update is required
-          if [ "$latest_tag" = "$version" ]; then
-            requires_update=0
-          else
-            requires_update=1
-          fi
-
-          latest_tag=${latest_tag//./_}
-
-          echo "REQUIRES_UPDATE=$requires_update" >>$GITHUB_OUTPUT
-          echo "LATEST_TAG=$latest_tag" >>$GITHUB_OUTPUT
+        run: python ./scripts/compare_tags.py
 
   updateVersion:
     needs:
@@ -52,12 +27,17 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-go@v3
         with:
-          python-version: "3.10" # The version of Python to download (if necessary) and use.
+          go-version: "1.19"
+          check-latest: true
+          cache: true
+      - name: Install GOPLS
+        run: go install golang.org/x/tools/gopls@latest
+      - uses: actions/setup-python@v4
       - name: Update VERSION
         run: |
-          echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" | sed s/\_/\./g > plugin/version.py
+          echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" > plugin/version.py
       - name: Update Schema and Settings
         run: |
           python ./scripts/update-schema-settings.py
@@ -72,4 +52,4 @@ jobs:
             - [x] Updated `plugin/version.py`
             - [x] Updated `schema` and `settings`
             - [ ] Reviewed changes
-          branch: update/gopls_v${{ needs.compareTag.outputs.latest_tag }}
+          branch: update/gopls_v${{ needs.compareTag.outputs.branch_name }}
