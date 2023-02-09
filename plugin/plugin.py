@@ -78,7 +78,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), __package__)
+        return os.path.join(cls.storage_path(), __package__.split('.')[0])
 
     @classmethod
     def server_version(cls) -> str:
