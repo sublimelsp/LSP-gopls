@@ -1,5 +1,6 @@
 from LSP.plugin.core.protocol import Position
-from LSP.plugin.core.typing import TypedDict, List
+from LSP.plugin.core.typing import TypedDict
+from LSP.plugin.core.typing import List
 
 
 GoplsStartDebuggingResponse = TypedDict(

@@ -1,24 +1,18 @@
-import sublime
-import sublime_plugin
-
-from .types import (
-    GoplsVulnerabilities,
-    GoplsStartDebuggingResponse,
-)
-from .vulnerabilities import Vulnerabilities
-from .constants import SESSION_NAME
-
-from LSP.plugin import (
-    LspTextCommand,
-    Request,
-)
-from LSP.plugin.core.typing import (
-    Optional,
-)
-from LSP.plugin.core.views import uri_from_view
 
 import os
 
+import sublime
+import sublime_plugin
+
+from .types import GoplsVulnerabilities
+from .types import GoplsStartDebuggingResponse
+from .vulnerabilities import Vulnerabilities
+from .constants import SESSION_NAME
+
+from LSP.plugin import LspTextCommand
+from LSP.plugin import Request
+from LSP.plugin.core.typing import Optional
+from LSP.plugin.core.views import uri_from_view
 
 class GoplsCommand(LspTextCommand):
     session_name = SESSION_NAME

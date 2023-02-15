@@ -1,14 +1,16 @@
 import sublime
 
-from LSP.plugin import (
-    Session,
-)
-from LSP.plugin.core.typing import Optional, Union, List, Any, Tuple
-
 import textwrap
 from shutil import which
 import subprocess
 import tempfile
+
+from LSP.plugin import Session
+from LSP.plugin.core.typing import Optional
+from LSP.plugin.core.typing import Union
+from LSP.plugin.core.typing import List
+from LSP.plugin.core.typing import Any
+from LSP.plugin.core.typing import Tuple
 
 
 def get_setting(
