@@ -1,8 +1,11 @@
 import sublime
 
-from .types import GoplsVulnerabilities, GoplsVulnCallStack
+from .types import GoplsVulnerabilities
+from .types import GoplsVulnCallStack
 from .utils import reformat
-from LSP.plugin.core.typing import Optional, List
+
+from LSP.plugin.core.typing import Optional
+from LSP.plugin.core.typing import List
 from LSP.plugin import parse_uri
 
 import mdpopups

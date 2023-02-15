@@ -3,32 +3,26 @@ import os
 
 import sublime
 
-from LSP.plugin import (
-    AbstractPlugin,
-    Session,
-    parse_uri,
-)
-from LSP.plugin.core.typing import (
-    Any,
-    Optional,
-    Tuple,
-    Mapping,
-    Callable,
-    List,
-)
-
 from .version import VERSION
-from .constants import (
-    GOPLS_BASE_URL,
-    RE_VER,
-    SESSION_NAME
-)
-from .utils import (
-    get_setting,
-    to_int,
-    is_binary_available,
-    run_go_command,
-)
+from .constants import GOPLS_BASE_URL
+from .constants import RE_VER
+from .constants import SESSION_NAME
+
+from .utils import get_setting
+from .utils import to_int
+from .utils import is_binary_available
+from .utils import run_go_command
+
+from LSP.plugin import AbstractPlugin
+from LSP.plugin import Session
+from LSP.plugin import parse_uri
+from LSP.plugin.core.typing import Any
+from LSP.plugin.core.typing import Optional
+from LSP.plugin.core.typing import Tuple
+from LSP.plugin.core.typing import Mapping
+from LSP.plugin.core.typing import Callable
+from LSP.plugin.core.typing import List
+
 
 
 try:
