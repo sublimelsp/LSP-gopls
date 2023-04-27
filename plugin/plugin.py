@@ -133,6 +133,11 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def needs_update_or_installation(cls) -> bool:
+        settings = sublime.load_settings('LSP-gopls.sublime-settings')
+        is_managed = settings.get('settings', {}).get('auto_upgrade_binary', True)
+        if not is_managed:
+            return False
+
         return not cls._is_gopls_installed() or (
             cls.server_version() != cls.current_server_version()
         )

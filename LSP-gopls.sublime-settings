@@ -5,6 +5,8 @@
   ],
   "selector": "source.go | source.gomod",
   "settings": {
+    // Controls if LSP-gopls will manage the gopls binary
+    "auto_upgrade_binary": true,
     // Controls if the Terminus panel/tab will auto close on tests completing.
     "closeTestResultsWhenFinished": false,
     // Controls if the test results output to a panel instead of a tab.

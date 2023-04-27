@@ -74,6 +74,11 @@ TYPE_MAP = {
 
 # Custom LSP-gopls settings not provided by gopls directly
 CUSTOM_PROPERTIES = {
+    'auto_upgrade_binary': {
+        'default': True,
+        'markdownDescription': 'Controls if LSP-gopls will manage the gopls binary\n',
+        'type': 'boolean'
+    },
     'closeTestResultsWhenFinished': {
         'default': False,
         'markdownDescription': 'Controls if the Terminus panel/tab will auto close on tests completing.\n',

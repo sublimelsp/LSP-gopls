@@ -19,6 +19,11 @@
                   "additionalProperties": false,
                   "type": "object",
                   "properties": {
+                    "auto_upgrade_binary": {
+                      "default": true,
+                      "markdownDescription": "Controls if LSP-gopls will manage the gopls binary\n",
+                      "type": "boolean"
+                    },
                     "closeTestResultsWhenFinished": {
                       "default": false,
                       "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.\n",
