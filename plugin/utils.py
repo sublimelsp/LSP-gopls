@@ -12,6 +12,8 @@ from LSP.plugin.core.typing import List
 from LSP.plugin.core.typing import Any
 from LSP.plugin.core.typing import Tuple
 
+from .constants import SETTINGS
+
 
 def get_setting(
     session: Session,
@@ -22,6 +24,10 @@ def get_setting(
     if value is None:
         return default
     return value
+
+
+def get_settings():
+    return sublime.load_settings(SETTINGS)
 
 
 def run_go_command(
