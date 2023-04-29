@@ -74,14 +74,19 @@ TYPE_MAP = {
 
 # Custom LSP-gopls settings not provided by gopls directly
 CUSTOM_PROPERTIES = {
+    'manageGoplsBinary': {
+        'default': True,
+        'markdownDescription': 'Controls if LSP-gopls will automatically install and upgrade gopls.\nIf this option is set to `False` the user will need to update the\n`command` to point to a valid gopls binary.',
+        'type': 'boolean'
+    },
     'closeTestResultsWhenFinished': {
         'default': False,
-        'markdownDescription': 'Controls if the Terminus panel/tab will auto close on tests completing.\n',
+        'markdownDescription': 'Controls if the Terminus panel/tab will auto close on tests completing.',
         'type': 'boolean',
     },
     'runTestsInPanel': {
         'default': True,
-        'markdownDescription': 'Controls if the test results output to a panel instead of a tab.\n',
+        'markdownDescription': 'Controls if the test results output to a panel instead of a tab.',
         'type': 'boolean',
     },
 }
@@ -189,14 +194,14 @@ class GoplsGenerator:
                 [
                     f'{PREFIX_LSP_GOPLS_SETTINGS}// {line}'.rstrip()
                     for line in properties[prop]['markdownDescription'].split('\n')
-                ][:-1]
+                ]
             )
             defaults = json.dumps(properties[prop]["default"], indent=2)
             defaults = '\n'.join(
                 [f'{PREFIX_LSP_GOPLS_SETTINGS}{line}' for line in defaults.split('\n')]
             )
             defaults = f'{PREFIX_LSP_GOPLS_SETTINGS}"{prop}": {defaults.lstrip()},'
-            compiled_settings += lines + '\n' + defaults + '\n'
+            compiled_settings += lines + '\n' + defaults + '\n\n'
         self.gopls_settings = (
             BEGIN_LSP_GOPLS_SETTINGS
             + compiled_settings.rstrip()
