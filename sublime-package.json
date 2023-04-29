@@ -19,19 +19,19 @@
                   "additionalProperties": false,
                   "type": "object",
                   "properties": {
-                    "auto_upgrade_binary": {
+                    "manageGoplsBinary": {
                       "default": true,
-                      "markdownDescription": "Controls if LSP-gopls will manage the gopls binary\n",
+                      "markdownDescription": "Controls if LSP-gopls will automatically install and upgrade gopls.\nIf this option is set to `False` the user will need to update the\n`command` to point to a valid gopls binary.",
                       "type": "boolean"
                     },
                     "closeTestResultsWhenFinished": {
                       "default": false,
-                      "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.\n",
+                      "markdownDescription": "Controls if the Terminus panel/tab will auto close on tests completing.",
                       "type": "boolean"
                     },
                     "runTestsInPanel": {
                       "default": true,
-                      "markdownDescription": "Controls if the test results output to a panel instead of a tab.\n",
+                      "markdownDescription": "Controls if the test results output to a panel instead of a tab.",
                       "type": "boolean"
                     },
                     "gopls.buildFlags": {

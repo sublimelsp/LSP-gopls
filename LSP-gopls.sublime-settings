@@ -5,18 +5,27 @@
   ],
   "selector": "source.go | source.gomod",
   "settings": {
-    // Controls if LSP-gopls will manage the gopls binary
-    "auto_upgrade_binary": true,
+    // Controls if LSP-gopls will automatically install and upgrade gopls.
+    // If this option is set to `False` the user will need to update the
+    // `command` to point to a valid gopls binary.
+    "manageGoplsBinary": true,
+
     // Controls if the Terminus panel/tab will auto close on tests completing.
     "closeTestResultsWhenFinished": false,
+
     // Controls if the test results output to a panel instead of a tab.
     "runTestsInPanel": true,
+
     // buildFlags is the set of flags passed on to the build system when invoked.
     // It is applied to queries like `go list`, which is used when discovering files.
     // The most common use is to set `-tags`.
+    //
     "gopls.buildFlags": [],
+
     // env adds environment variables to external commands run by `gopls`, most notably `go list`.
+    //
     "gopls.env": {},
+
     // directoryFilters can be used to exclude unwanted directories from the
     // workspace. By default, all directories are included. Filters are an
     // operator, `+` to include and `-` to exclude, followed by a path prefix
@@ -35,31 +44,41 @@
     // Include only project_a: `-` (exclude everything), `+project_a`
     //
     // Include only project_a, but not node_modules inside it: `-`, `+project_a`, `-project_a/node_modules`
+    //
     "gopls.directoryFilters": [
       "-**/node_modules"
     ],
+
     // templateExtensions gives the extensions of file names that are treateed
     // as template files. (The extension
     // is the part of the file name after the final dot.)
+    //
     "gopls.templateExtensions": [],
+
     // (experimental) memoryMode controls the tradeoff `gopls` makes between memory usage and
     // correctness.
     //
     // Values other than `Normal` are untested and may break in surprising ways.
+    //
     "gopls.memoryMode": "Normal",
+
     // (experimental) expandWorkspaceToModule instructs `gopls` to adjust the scope of the
     // workspace to find the best available module root. `gopls` first looks for
     // a go.mod file in any parent directory of the workspace folder, expanding
     // the scope to that directory if it exists. If no viable parent directory is
     // found, gopls will check if there is exactly one child directory containing
     // a go.mod file, narrowing the scope to that directory if it exists.
+    //
     "gopls.expandWorkspaceToModule": true,
+
     // (experimental) experimentalWorkspaceModule opts a user into the experimental support
     // for multi-module workspaces.
     //
     // Deprecated: this feature is deprecated and will be removed in a future
     // version of gopls (https://go.dev/issue/55331).
+    //
     "gopls.experimentalWorkspaceModule": false,
+
     // (experimental) experimentalPackageCacheKey controls whether to use a coarser cache key
     // for package type information to increase cache hits. This setting removes
     // the user's environment, build flags, and working directory from the cache
@@ -67,14 +86,20 @@
     // checking pass are already hashed into the key. This is temporarily guarded
     // by an experiment because caching behavior is subtle and difficult to
     // comprehensively test.
+    //
     "gopls.experimentalPackageCacheKey": true,
+
     // (experimental) allowModfileModifications disables -mod=readonly, allowing imports from
     // out-of-scope modules. This option will eventually be removed.
+    //
     "gopls.allowModfileModifications": false,
+
     // (experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module
     // downloads rather than requiring user action. This option will eventually
     // be removed.
+    //
     "gopls.allowImplicitNetworkAccess": false,
+
     // standaloneTags specifies a set of build constraints that identify
     // individual Go source files that make up the entire main package of an
     // executable.
@@ -93,12 +118,16 @@
     // main file.
     //
     // This setting is only supported when gopls is built with Go 1.16 or later.
+    //
     "gopls.standaloneTags": [
       "ignore"
     ],
+
     // hoverKind controls the information that appears in the hover text.
     // SingleLine and Structured are intended for use only by authors of editor plugins.
+    //
     "gopls.hoverKind": "FullDocumentation",
+
     // linkTarget controls where documentation links go.
     // It might be one of:
     //
@@ -109,29 +138,45 @@
     //
     // Modules matching the GOPRIVATE environment variable will not have
     // documentation links in hover.
+    //
     "gopls.linkTarget": "pkg.go.dev",
+
     // linksInHover toggles the presence of links to documentation in hover.
+    //
     "gopls.linksInHover": true,
+
     // placeholders enables placeholders for function parameters or struct
     // fields in completion responses.
+    //
     "gopls.usePlaceholders": false,
+
     // (debug) completionBudget is the soft latency goal for completion requests. Most
     // requests finish in a couple milliseconds, but in some cases deep
     // completions can take much longer. As we use up our budget we
     // dynamically reduce the search scope to ensure we return timely
     // results. Zero means unlimited.
+    //
     "gopls.completionBudget": "100ms",
+
     // (advanced) matcher sets the algorithm that is used when calculating completion
     // candidates.
+    //
     "gopls.matcher": "Fuzzy",
+
     // (experimental) experimentalPostfixCompletions enables artificial method snippets
     // such as "someSlice.sort!".
+    //
     "gopls.experimentalPostfixCompletions": true,
+
     // importShortcut specifies whether import statements should link to
     // documentation or go to definitions.
+    //
     "gopls.importShortcut": "Both",
+
     // (advanced) symbolMatcher sets the algorithm that is used when finding workspace symbols.
+    //
     "gopls.symbolMatcher": "FastFuzzy",
+
     // (advanced) symbolStyle controls how symbols are qualified in symbol responses.
     //
     // Example Usage:
@@ -143,7 +188,9 @@
     // ...
     // }
     // ```
+    //
     "gopls.symbolStyle": "Dynamic",
+
     // analyses specify analyses that the user would like to enable or disable.
     // A map of the names of analysis passes that should be enabled/disabled.
     // A full list of analyzers that gopls uses can be found in
@@ -159,28 +206,38 @@
     // }
     // ...
     // ```
+    //
     "gopls.analyses": {},
+
     // (experimental) staticcheck enables additional analyses from staticcheck.io.
     // These analyses are documented on
     // [Staticcheck's website](https://staticcheck.io/docs/checks/).
+    //
     "gopls.staticcheck": false,
+
     // (experimental) annotations specifies the various kinds of optimization diagnostics
     // that should be reported by the gc_details command.
+    //
     "gopls.annotations": {
       "bounds": true,
       "escape": true,
       "inline": true,
       "nil": true
     },
+
     // (experimental) vulncheck enables vulnerability scanning.
+    //
     "gopls.vulncheck": "Off",
+
     // (advanced) diagnosticsDelay controls the amount of time that gopls waits
     // after the most recent file modification before computing deep diagnostics.
     // Simple diagnostics (parsing and type-checking) are always run immediately
     // on recently modified packages.
     //
     // This option must be set to a valid duration string, for example `"250ms"`.
+    //
     "gopls.diagnosticsDelay": "250ms",
+
     // (experimental) experimentalWatchedFileDelay controls the amount of time that gopls waits
     // for additional workspace/didChangeWatchedFiles notifications to arrive,
     // before processing all such notifications in a single batch. This is
@@ -191,11 +248,15 @@
     //
     // Deprecated: this setting is deprecated and will be removed in a future
     // version of gopls (https://go.dev/issue/55332)
+    //
     "gopls.experimentalWatchedFileDelay": "0s",
+
     // (experimental) hints specify inlay hints that users want to see. A full list of hints
     // that gopls uses can be found in
     // [inlayHints.md](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).
+    //
     "gopls.hints": {},
+
     // codelenses overrides the enabled/disabled state of code lenses. See the
     // "Code Lenses" section of the
     // [Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)
@@ -213,6 +274,7 @@
     // ...
     // }
     // ```
+    //
     "gopls.codelenses": {
       "gc_details": false,
       "generate": true,
@@ -221,21 +283,33 @@
       "upgrade_dependency": true,
       "vendor": true
     },
+
     // (experimental) semanticTokens controls whether the LSP server will send
     // semantic tokens to the client.
+    //
     "gopls.semanticTokens": false,
+
     // (experimental) noSemanticString turns off the sending of the semantic token 'string'
+    //
     "gopls.noSemanticString": false,
+
     // (experimental) noSemanticNumber  turns off the sending of the semantic token 'number'
+    //
     "gopls.noSemanticNumber": false,
+
     // local is the equivalent of the `goimports -local` flag, which puts
     // imports beginning with this string after third-party packages. It should
     // be the prefix of the import path whose imports should be grouped
     // separately.
+    //
     "gopls.local": "",
+
     // gofumpt indicates if we should run gofumpt formatting.
+    //
     "gopls.gofumpt": false,
+
     // (debug) verboseOutput enables additional debug logging.
+    //
     "gopls.verboseOutput": false,
   }
 }
