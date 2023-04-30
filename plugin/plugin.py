@@ -1,5 +1,6 @@
 # Packages/LSP-gopls/plugin/plugin.py
 import os
+import json
 
 import sublime
 
@@ -15,14 +16,17 @@ from .utils import is_binary_available
 from .utils import run_go_command
 
 from LSP.plugin import AbstractPlugin
+from LSP.plugin import Response
 from LSP.plugin import Session
 from LSP.plugin import parse_uri
+from LSP.plugin.core.protocol import InitializeResult
 from LSP.plugin.core.typing import Any
 from LSP.plugin.core.typing import Optional
 from LSP.plugin.core.typing import Tuple
 from LSP.plugin.core.typing import Mapping
 from LSP.plugin.core.typing import Callable
 from LSP.plugin.core.typing import List
+
 
 
 
@@ -181,3 +185,18 @@ class Gopls(AbstractPlugin):
             except Exception as ex:
                 print('Exception handling command {}: {}'.format(command_name, ex))
         return False
+
+    def on_server_response_async(self, method: str, response: Response) -> None:
+        if method == 'initialize':
+            result = response.result  # type: InitializeResult
+            version_raw = result.get('serverInfo', {}).get('version')
+            if version_raw:
+                version = 'unknown'
+                try:
+                    version_data = json.loads(version_raw)
+                    version = version_data.get('Version', 'unknown')
+                except Exception as e:
+                    pass
+                session = self.weaksession()
+                if session:
+                    session.set_config_status_async(version)
