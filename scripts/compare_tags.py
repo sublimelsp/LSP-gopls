@@ -6,6 +6,7 @@ from typing import Literal
 import urllib.request
 from urllib.error import URLError
 
+
 class VersionChecker:
     def __init__(self, url: str):
         self.url = url
@@ -14,19 +15,28 @@ class VersionChecker:
         try:
             # Call the GitHub API and retrieve the tags
             with urllib.request.urlopen(self.url) as f:
-                tags_str = f.read().decode('utf-8')
+                tags_str = f.read().decode("utf-8")
             return json.loads(tags_str)
         except URLError as e:
             print(f"Error while fetching tags from GitHub API: {e}")
             exit(1)
 
     def get_latest_version(self, tags: list) -> str:
-      for tag in tags:
-          if tag['name'].startswith('gopls/v'):
-              return tag['name'].split('v')[1]
+        for tag in tags:
+            if tag["name"].startswith("gopls/v"):
+                unparsed_version = tag["name"].split("v")[1]
+                version = re.search(r"(\d+\.\d+\.\d+)-?(\w+\.\d+)?", unparsed_version)
+                if not version:
+                    print("[get_latest_version] Regex match failed. Could not find latest version from tags.")
+                    exit(1)
 
-      print("Could not find latest version from tags.")
-      exit(1)
+                if len(version.groups()) == 2:
+                    print(f"Found latest version: {version.group(1)}-{version.group(2)}")
+                    print("Latest version appears to be a pre-release. Skipping.")
+                    exit(1)
+                return version.group(1)
+        print("[get_latest_version] Could not find latest version from tags.")
+        exit(1)
 
     def get_version_locally(self) -> str:
         try:
@@ -38,7 +48,6 @@ class VersionChecker:
         except (IOError, ValueError) as e:
             print(f"Error while reading plugin/version.py: {e}")
             exit(1)
-
 
     def compare_semantic_versions(self, v1: str, v2: str) -> Literal[0, 1]:
         # Split the versions into lists of integers
@@ -63,10 +72,10 @@ class VersionChecker:
         requires_update = self.compare_semantic_versions(local_version, latest_version)
         branch_name = latest_version.replace(".", "_")
 
-        with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-            print(f'REQUIRES_UPDATE={requires_update}', file=fh)
-            print(f'LATEST_VERSION={latest_version}', file=fh)
-            print(f'BRANCH_NAME={branch_name}', file=fh)
+        with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+            print(f"REQUIRES_UPDATE={requires_update}", file=fh)
+            print(f"LATEST_VERSION={latest_version}", file=fh)
+            print(f"BRANCH_NAME={branch_name}", file=fh)
 
 
 url = "https://api.github.com/repos/golang/tools/tags"
