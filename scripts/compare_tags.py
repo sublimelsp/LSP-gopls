@@ -30,7 +30,7 @@ class VersionChecker:
                     print("[get_latest_version] Regex match failed. Could not find latest version from tags.")
                     exit(1)
 
-                if len(version.groups()) == 2:
+                if len(version.groups()) == 2 and version.group(2) is not None:
                     print(f"Found latest version: {version.group(1)}-{version.group(2)}")
                     print("Latest version appears to be a pre-release. Skipping.")
                     exit(0)
