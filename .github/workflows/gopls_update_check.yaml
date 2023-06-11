@@ -9,7 +9,7 @@ jobs:
   compareTag:
     runs-on: ubuntu-latest
     outputs:
-      latest_tag: ${{ steps.tagCompare.outputs.LATEST_TAG }}
+      latest_tag: ${{ steps.tagCompare.outputs.LATEST_VERSION }}
       requires_update: ${{ steps.tagCompare.outputs.REQUIRES_UPDATE }}
       branch_name: ${{ steps.tagCompare.outputs.BRANCH_NAME }}
     steps:
@@ -34,7 +34,8 @@ jobs:
           check-latest: true
           cache: true
       - name: Install GOPLS
-        run: go install "golang.org/x/tools/gopls@v${{ needs.compareTag.outputs.latest_tag }}"
+        run: |
+          go install golang.org/x/tools/gopls@v${{ needs.compareTag.outputs.latest_tag }}
       - uses: actions/setup-python@v4
       - name: Update VERSION
         run: |
