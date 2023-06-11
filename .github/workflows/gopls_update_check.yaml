@@ -35,6 +35,7 @@ jobs:
           cache: true
       - name: Install GOPLS
         run: |
+          echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'"
           export VERSION=${{ needs.compareTag.outputs.latest_tag }}
           go install "golang.org/x/tools/gopls@v$VERSION"
       - uses: actions/setup-python@v4
