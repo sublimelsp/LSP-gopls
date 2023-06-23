@@ -1,7 +1,7 @@
 import re
 import json
 import os
-from typing import Literal
+from typing import Literal, Tuple
 
 import urllib.request
 from urllib.error import URLError
@@ -21,7 +21,7 @@ class VersionChecker:
             print(f"Error while fetching tags from GitHub API: {e}")
             exit(1)
 
-    def get_latest_version(self, tags: list) -> str:
+    def get_latest_version(self, tags: list) -> Tuple[str, bool]:
         for tag in tags:
             if tag["name"].startswith("gopls/v"):
                 unparsed_version = tag["name"].split("v")[1]
@@ -32,10 +32,10 @@ class VersionChecker:
 
                 if version.group(2) is not None:
                     print(f'[get_latest_version] Version is {version.group(1)}-{version.group(2)}')
-                    return f'{version.group(1)}-{version.group(2)}'
+                    return f'{version.group(1)}-{version.group(2)}', True
 
                 print(f'[get_latest_version] Version is {version.group(1)}')
-                return version.group(1)
+                return version.group(1), False
         print("[get_latest_version] Could not find latest version from tags.")
         exit(1)
 
@@ -66,8 +66,13 @@ class VersionChecker:
 
     def check_for_update(self):
         tags = self.get_tags()
-        latest_version = self.get_latest_version(tags)
+        latest_version, prelease = self.get_latest_version(tags)
         local_version = self.get_version_locally()
+        if prelease:
+            with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
+                print(f"REQUIRES_UPDATE=0", file=fh)
+                print(f"LATEST_VERSION={latest_version}", file=fh)
+            return
 
         # Check if update is required
         requires_update = self.compare_semantic_versions(local_version, latest_version)
