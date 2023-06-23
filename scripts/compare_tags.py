@@ -23,7 +23,7 @@ class VersionChecker:
 
     def get_latest_version(self, tags: list) -> Tuple[str, bool]:
         for tag in tags:
-            if tag["name"].startswith("gopls/v"):
+            if tag["tag_name"].startswith("gopls/v"):
                 unparsed_version = tag["name"].split("v")[1]
                 version = re.search(r"(\d+\.\d+\.\d+)-?(\w+\.\d+)?", unparsed_version)
                 if not version:
@@ -84,5 +84,5 @@ class VersionChecker:
             print(f"BRANCH_NAME={branch_name}", file=fh)
 
 
-url = "https://api.github.com/repos/golang/tools/tags"
+url = "https://api.github.com/repos/golang/tools/releases"
 VersionChecker(url=url).check_for_update()
