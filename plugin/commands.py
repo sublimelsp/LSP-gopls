@@ -1,6 +1,5 @@
 from functools import partial
 import os
-from plugin.utils import get_setting
 
 import sublime
 import sublime_plugin
@@ -9,6 +8,7 @@ from .types import GoplsVulnerabilities
 from .types import GoplsStartDebuggingResponse
 from .vulnerabilities import Vulnerabilities
 from .constants import SESSION_NAME
+from .utils import get_settings
 
 import mdpopups
 
@@ -180,11 +180,4 @@ class GoplsViewEventListener(sublime_plugin.ViewEventListener):
         mdpopups.add_phantom(self.view, 'gopls-references', range_to_region(symbol['selectionRange'], self.view), get_references_html(self.view, len(references)), sublime.LAYOUT_BELOW, md=False)
 
     def is_applicable(self):
-        listener = windows.listener_for_view(self.view)
-        if not listener or listener.get_language_id() != 'go':
-            return False
-
-        session = listener.session_async('documentSymbolProvider')
-        if not session or not listener.session_async('referencesProvider'):
-            return False
-        return get_setting(session, 'displayInlineReferences', False)
+        return get_settings().get('settings', {}).get('displayInlineReferences', False)
