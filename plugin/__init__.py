@@ -2,6 +2,7 @@
 from .commands import GoplsOpenFileCommand
 from .commands import GoplsStartDebuggingCommand
 from .commands import GoplsRunVulnCheckCommand
+from .commands import GoplsViewEventListener
 from .plugin import Gopls
 
 from LSP.plugin import register_plugin
@@ -17,6 +18,7 @@ __all__ = (
     'GoplsOpenFileCommand',
     'GoplsStartDebuggingCommand',
     'GoplsRunVulnCheckCommand',
+    'GoplsViewEventListener'
     )
 
 def plugin_loaded():

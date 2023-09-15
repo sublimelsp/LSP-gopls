@@ -16,6 +16,9 @@
     // Controls if the test results output to a panel instead of a tab.
     "runTestsInPanel": true,
 
+    // Controls if reference counts of symbols should be displayed inline
+    "displayInlineReferences": true,
+
     // buildFlags is the set of flags passed on to the build system when invoked.
     // It is applied to queries like `go list`, which is used when discovering files.
     // The most common use is to set `-tags`.

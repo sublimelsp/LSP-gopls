@@ -1,5 +1,6 @@
-
+from functools import partial
 import os
+from plugin.utils import get_setting
 
 import sublime
 import sublime_plugin
@@ -9,10 +10,15 @@ from .types import GoplsStartDebuggingResponse
 from .vulnerabilities import Vulnerabilities
 from .constants import SESSION_NAME
 
+import mdpopups
+
 from LSP.plugin import LspTextCommand
 from LSP.plugin import Request
 from LSP.plugin.core.typing import Optional
 from LSP.plugin.core.views import uri_from_view
+from LSP.plugin.core.url import view_to_uri
+from LSP.plugin.core.registry import windows
+from LSP.plugin.core.views import range_to_region
 
 class GoplsCommand(LspTextCommand):
     session_name = SESSION_NAME
@@ -118,3 +124,67 @@ class GoplsStartDebuggingCommand(GoplsCommand):
         sublime.message_dialog(
             'Debug session started on port(s):\n{port}'.format(port='\t{url}\n'.join(response['URLs']))
         )
+
+def get_references_html(view: sublime.View, count: int) -> str:
+    font = view.settings().get('font_face') or "monospace"
+    word = "reference" if count == 1 else "references"
+    html = """
+    <body id="lsp-references">
+        <style>
+            .references {{
+                font-family: {font};
+            }}
+            {css}
+        </style>
+        <div class="references">
+            {count} {word}
+        </div>
+    </body>
+    """.format(
+        font=font,
+        css=sublime.load_resource("Packages/LSP-gopls/references.css"),
+        count=count,
+        word=word,
+    )
+    return html
+
+
+class GoplsViewEventListener(sublime_plugin.ViewEventListener):
+    def on_activated_async(self):
+        listener = windows.listener_for_view(self.view)
+        if not listener or listener.get_language_id() != 'go':
+            return
+
+        session = listener.session_async('documentSymbolProvider')
+        if not session or not listener.session_async('referencesProvider'):
+            return
+
+        mdpopups.erase_phantoms(self.view, 'gopls-references')
+        def _request_references(symbols) -> None:
+            for symbol in symbols:
+                params = {
+                    'textDocument': {
+                        'uri': view_to_uri(self.view)
+                    },
+                    'position': symbol['selectionRange']['start']
+                }
+                request = Request("textDocument/references", params)
+                session.send_request_async(request, partial(self._draw_regions, symbol), lambda res: res)
+
+        uri = view_to_uri(self.view)
+        params = {'textDocument': {"uri": uri}}
+        request = Request("textDocument/documentSymbol", params)
+        session.send_request_async(request, lambda res: _request_references(res), lambda res: res)
+
+    def _draw_regions(self, symbol, references):
+        mdpopups.add_phantom(self.view, 'gopls-references', range_to_region(symbol['selectionRange'], self.view), get_references_html(self.view, len(references)), sublime.LAYOUT_BELOW, md=False)
+
+    def is_applicable(self):
+        listener = windows.listener_for_view(self.view)
+        if not listener or listener.get_language_id() != 'go':
+            return False
+
+        session = listener.session_async('documentSymbolProvider')
+        if not session or not listener.session_async('referencesProvider'):
+            return False
+        return get_setting(session, 'displayInlineReferences', False)
