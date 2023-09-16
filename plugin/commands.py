@@ -125,7 +125,7 @@ class GoplsStartDebuggingCommand(GoplsCommand):
             'Debug session started on port(s):\n{port}'.format(port='\t{url}\n'.join(response['URLs']))
         )
 
-def get_references_html(view: sublime.View, count: int) -> str:
+def get_references_html(view: sublime.View, point: int, count: int) -> str:
     font = view.settings().get('font_face') or "monospace"
     word = "reference" if count == 1 else "references"
     html = """
@@ -137,12 +137,13 @@ def get_references_html(view: sublime.View, count: int) -> str:
             {css}
         </style>
         <div class="references">
-            {count} {word}
+            <a href='subl:lsp_symbol_references {{"point": {pos}}}'>{count} {word}</a>
         </div>
     </body>
     """.format(
         font=font,
         css=sublime.load_resource("Packages/LSP-gopls/references.css"),
+        pos=point,
         count=count,
         word=word,
     )
@@ -177,7 +178,7 @@ class GoplsViewEventListener(sublime_plugin.ViewEventListener):
         session.send_request_async(request, lambda res: _request_references(res), lambda res: res)
 
     def _draw_regions(self, symbol, references):
-        mdpopups.add_phantom(self.view, 'gopls-references', range_to_region(symbol['selectionRange'], self.view), get_references_html(self.view, len(references)), sublime.LAYOUT_BELOW, md=False)
+        mdpopups.add_phantom(self.view, 'gopls-references', range_to_region(symbol['selectionRange'], self.view), get_references_html(self.view,  range_to_region(symbol['selectionRange'], self.view).a, len(references)), sublime.LAYOUT_BELOW, md=False)
 
     def is_applicable(self):
         return get_settings().get('settings', {}).get('displayInlineReferences', False)
