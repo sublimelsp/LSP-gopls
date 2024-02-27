@@ -55,19 +55,18 @@
     //
     "gopls.templateExtensions": [],
 
-    // (experimental) memoryMode controls the tradeoff `gopls` makes between memory usage and
-    // correctness.
+    // (experimental) obsolete, no effect
     //
-    // Values other than `Normal` are untested and may break in surprising ways.
-    //
-    "gopls.memoryMode": "Normal",
+    "gopls.memoryMode": "",
 
-    // (experimental) expandWorkspaceToModule instructs `gopls` to adjust the scope of the
-    // workspace to find the best available module root. `gopls` first looks for
-    // a go.mod file in any parent directory of the workspace folder, expanding
-    // the scope to that directory if it exists. If no viable parent directory is
-    // found, gopls will check if there is exactly one child directory containing
-    // a go.mod file, narrowing the scope to that directory if it exists.
+    // (experimental) expandWorkspaceToModule determines which packages are considered
+    // "workspace packages" when the workspace is using modules.
+    //
+    // Workspace packages affect the scope of workspace-wide operations. Notably,
+    // gopls diagnoses all packages considered to be part of the workspace after
+    // every keystroke, so by setting "ExpandWorkspaceToModule" to false, and
+    // opening a nested workspace directory, you can reduce the amount of work
+    // gopls has to do to keep your workspace up to date.
     //
     "gopls.expandWorkspaceToModule": true,
 
@@ -200,7 +199,7 @@
     // ...
     // "analyses": {
     //   "unreachable": false, // Disable the unreachable analyzer.
-    //   "unusedparams": true  // Enable the unusedparams analyzer.
+    //   "unusedvariable": true  // Enable the unusedvariable analyzer.
     // }
     // ...
     // ```
@@ -235,6 +234,10 @@
     // This option must be set to a valid duration string, for example `"250ms"`.
     //
     "gopls.diagnosticsDelay": "1s",
+
+    // (experimental) diagnosticsTrigger controls when to run diagnostics.
+    //
+    "gopls.diagnosticsTrigger": "Edit",
 
     // analysisProgressReporting controls whether gopls sends progress
     // notifications when construction of its index of analysis facts is taking a
