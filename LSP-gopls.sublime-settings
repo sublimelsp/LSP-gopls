@@ -70,11 +70,6 @@
     //
     "gopls.expandWorkspaceToModule": true,
 
-    // (experimental) allowModfileModifications disables -mod=readonly, allowing imports from
-    // out-of-scope modules. This option will eventually be removed.
-    //
-    "gopls.allowModfileModifications": false,
-
     // (experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module
     // downloads rather than requiring user action. This option will eventually
     // be removed.
@@ -122,7 +117,13 @@
     //
     "gopls.linkTarget": "pkg.go.dev",
 
-    // linksInHover toggles the presence of links to documentation in hover.
+    // linksInHover controls the presence of documentation links
+    // in hover markdown.
+    //
+    // Its legal values are:
+    // - `false`, for no links;
+    // - `true`, for links to the `linkTarget` domain; or
+    // - `"gopls"`, for links to gopls' internal documentation viewer.
     //
     "gopls.linksInHover": true,
 
@@ -181,10 +182,9 @@
     "gopls.symbolStyle": "Dynamic",
 
     // symbolScope controls which packages are searched for workspace/symbol
-    // requests. The default value, "workspace", searches only workspace
-    // packages. The legacy behavior, "all", causes all loaded packages to be
-    // searched, including dependencies; this is more expensive and may return
-    // unwanted results.
+    // requests. When the scope is "workspace", gopls searches only workspace
+    // packages. When the scope is "all", gopls searches all loaded packages,
+    // including dependencies and the standard library.
     //
     "gopls.symbolScope": "all",
 
@@ -257,10 +257,8 @@
     //
     "gopls.hints": {},
 
-    // codelenses overrides the enabled/disabled state of code lenses. See the
-    // "Code Lenses" section of the
-    // [Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)
-    // for the list of supported lenses.
+    // codelenses overrides the enabled/disabled state of each of gopls'
+    // sources of [Code Lenses](codelenses.md).
     //
     // Example Usage:
     //
@@ -279,6 +277,7 @@
       "gc_details": false,
       "generate": true,
       "regenerate_cgo": true,
+      "run_govulncheck": false,
       "tidy": true,
       "upgrade_dependency": true,
       "vendor": true
