@@ -139,6 +139,8 @@ class GoplsGenerator:
         raw_settings = raw_schema["Options"]["User"]
         for _, value in enumerate(raw_settings):
             current_key = f"gopls.{value['Name']}"
+            print(current_key)
+            print(value["Type"])
             current_type = TYPE_MAP[value["Type"]]
             resolved_type = current_type
 
