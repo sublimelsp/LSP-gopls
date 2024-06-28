@@ -61,6 +61,7 @@ SCHEMA_TEMPLATE = {
 }
 
 TYPE_MAP = {
+    "any": "any",
     "[]string": "array",
     "map[string]string": "object",
     "enum": "enum",
@@ -141,7 +142,7 @@ class GoplsGenerator:
             current_key = f"gopls.{value['Name']}"
             print(current_key)
             print(value["Type"])
-            current_type = TYPE_MAP[value["Type"]]
+            current_type = TYPE_MAP.get(value["Type"], value["Type"])
             resolved_type = current_type
 
             if resolved_type == "enum":
