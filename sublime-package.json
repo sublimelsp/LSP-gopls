@@ -67,11 +67,6 @@
                       "default": true,
                       "markdownDescription": "(experimental) expandWorkspaceToModule determines which packages are considered\n\"workspace packages\" when the workspace is using modules.\n\nWorkspace packages affect the scope of workspace-wide operations. Notably,\ngopls diagnoses all packages considered to be part of the workspace after\nevery keystroke, so by setting \"ExpandWorkspaceToModule\" to false, and\nopening a nested workspace directory, you can reduce the amount of work\ngopls has to do to keep your workspace up to date.\n"
                     },
-                    "gopls.allowModfileModifications": {
-                      "type": "boolean",
-                      "default": false,
-                      "markdownDescription": "(experimental) allowModfileModifications disables -mod=readonly, allowing imports from\nout-of-scope modules. This option will eventually be removed.\n"
-                    },
                     "gopls.allowImplicitNetworkAccess": {
                       "type": "boolean",
                       "default": false,
@@ -109,9 +104,9 @@
                       "markdownDescription": "linkTarget controls where documentation links go.\nIt might be one of:\n\n* `\"godoc.org\"`\n* `\"pkg.go.dev\"`\n\nIf company chooses to use its own `godoc.org`, its address can be used as well.\n\nModules matching the GOPRIVATE environment variable will not have\ndocumentation links in hover.\n"
                     },
                     "gopls.linksInHover": {
-                      "type": "boolean",
+                      "type": "any",
                       "default": true,
-                      "markdownDescription": "linksInHover toggles the presence of links to documentation in hover.\n"
+                      "markdownDescription": "linksInHover controls the presence of documentation links\nin hover markdown.\n\nIts legal values are:\n- `false`, for no links;\n- `true`, for links to the `linkTarget` domain; or\n- `\"gopls\"`, for links to gopls' internal documentation viewer.\n"
                     },
                     "gopls.usePlaceholders": {
                       "type": "boolean",
@@ -198,7 +193,7 @@
                     "gopls.symbolScope": {
                       "type": "string",
                       "default": "all",
-                      "markdownDescription": "symbolScope controls which packages are searched for workspace/symbol\nrequests. The default value, \"workspace\", searches only workspace\npackages. The legacy behavior, \"all\", causes all loaded packages to be\nsearched, including dependencies; this is more expensive and may return\nunwanted results.\n",
+                      "markdownDescription": "symbolScope controls which packages are searched for workspace/symbol\nrequests. When the scope is \"workspace\", gopls searches only workspace\npackages. When the scope is \"all\", gopls searches all loaded packages,\nincluding dependencies and the standard library.\n",
                       "enum": [
                         "all",
                         "workspace"
@@ -303,6 +298,11 @@
                           "type": "boolean",
                           "default": true
                         },
+                        "framepointer": {
+                          "markdownDescription": "report assembly that clobbers the frame pointer before saving it",
+                          "type": "boolean",
+                          "default": true
+                        },
                         "httpresponse": {
                           "markdownDescription": "check for mistakes using HTTP responses\n\nA common mistake when using the net/http package is to defer a function\ncall to close the http.Response Body before checking the error that\ndetermines whether the response is valid:\n\n\tresp, err := http.Head(url)\n\tdefer resp.Body.Close()\n\tif err != nil {\n\t\tlog.Fatal(err)\n\t}\n\t// (defer statement belongs here)\n\nThis checker helps uncover latent nil dereference bugs by reporting a\ndiagnostic for such mistakes.",
                           "type": "boolean",
@@ -334,7 +334,7 @@
                           "default": true
                         },
                         "nilness": {
-                          "markdownDescription": "check for redundant or impossible nil comparisons\n\nThe nilness checker inspects the control-flow graph of each function in\na package and reports nil pointer dereferences, degenerate nil\npointers, and panics with nil values. A degenerate comparison is of the form\nx==nil or x!=nil where x is statically known to be nil or non-nil. These are\noften a mistake, especially in control flow related to errors. Panics with nil\nvalues are checked because they are not detectable by\n\n\tif r := recover(); r != nil {\n\nThis check reports conditions such as:\n\n\tif f == nil { // impossible condition (f is a function)\n\t}\n\nand:\n\n\tp := &v\n\t...\n\tif p != nil { // tautological condition\n\t}\n\nand:\n\n\tif p == nil {\n\t\tprint(*p) // nil dereference\n\t}\n\nand:\n\n\tif p == nil {\n\t\tpanic(p)\n\t}",
+                          "markdownDescription": "check for redundant or impossible nil comparisons\n\nThe nilness checker inspects the control-flow graph of each function in\na package and reports nil pointer dereferences, degenerate nil\npointers, and panics with nil values. A degenerate comparison is of the form\nx==nil or x!=nil where x is statically known to be nil or non-nil. These are\noften a mistake, especially in control flow related to errors. Panics with nil\nvalues are checked because they are not detectable by\n\n\tif r := recover(); r != nil {\n\nThis check reports conditions such as:\n\n\tif f == nil { // impossible condition (f is a function)\n\t}\n\nand:\n\n\tp := &v\n\t...\n\tif p != nil { // tautological condition\n\t}\n\nand:\n\n\tif p == nil {\n\t\tprint(*p) // nil dereference\n\t}\n\nand:\n\n\tif p == nil {\n\t\tpanic(p)\n\t}\n\nSometimes the control flow may be quite complex, making bugs hard\nto spot. In the example below, the err.Error expression is\nguaranteed to panic because, after the first return, err must be\nnil. The intervening loop is just a distraction.\n\n\t...\n\terr := g.Wait()\n\tif err != nil {\n\t\treturn err\n\t}\n\tpartialSuccess := false\n\tfor _, err := range errs {\n\t\tif err == nil {\n\t\t\tpartialSuccess = true\n\t\t\tbreak\n\t\t}\n\t}\n\tif partialSuccess {\n\t\treportStatus(StatusMessage{\n\t\t\tCode:   code.ERROR,\n\t\t\tDetail: err.Error(), // \"nil dereference in dynamic method call\"\n\t\t})\n\t\treturn nil\n\t}\n\n...",
                           "type": "boolean",
                           "default": true
                         },
@@ -349,7 +349,7 @@
                           "default": true
                         },
                         "printf": {
-                          "markdownDescription": "check consistency of Printf format strings and arguments\n\nThe check applies to calls of the formatting functions such as\n[fmt.Printf] and [fmt.Sprintf], as well as any detected wrappers of\nthose functions.\n\nIn this example, the %d format operator requires an integer operand:\n\n\tfmt.Printf(\"%d\", \"hello\") // fmt.Printf format %d has arg \"hello\" of wrong type string\n\nSee the documentation of the fmt package for the complete set of\nformat operators and their operand types.\n\nTo enable printf checking on a function that is not found by this\nanalyzer's heuristics (for example, because control is obscured by\ndynamic method calls), insert a bogus call:\n\n\tfunc MyPrintf(format string, args ...any) {\n\t\tif false {\n\t\t\t_ = fmt.Sprintf(format, args...) // enable printf checker\n\t\t}\n\t\t...\n\t}\n\nThe -funcs flag specifies a comma-separated list of names of additional\nknown formatting functions or methods. If the name contains a period,\nit must denote a specific function using one of the following forms:\n\n\tdir/pkg.Function\n\tdir/pkg.Type.Method\n\t(*dir/pkg.Type).Method\n\nOtherwise the name is interpreted as a case-insensitive unqualified\nidentifier such as \"errorf\". Either way, if a listed name ends in f, the\nfunction is assumed to be Printf-like, taking a format string before the\nargument list. Otherwise it is assumed to be Print-like, taking a list\nof arguments with no format string.",
+                          "markdownDescription": "check consistency of Printf format strings and arguments\n\nThe check applies to calls of the formatting functions such as\n[fmt.Printf] and [fmt.Sprintf], as well as any detected wrappers of\nthose functions such as [log.Printf]. It reports a variety of\nmistakes such as syntax errors in the format string and mismatches\n(of number and type) between the verbs and their arguments.\n\nSee the documentation of the fmt package for the complete set of\nformat operators and their operand types.",
                           "type": "boolean",
                           "default": true
                         },
@@ -360,6 +360,11 @@
                         },
                         "shift": {
                           "markdownDescription": "check for shifts that equal or exceed the width of the integer",
+                          "type": "boolean",
+                          "default": true
+                        },
+                        "sigchanyzer": {
+                          "markdownDescription": "check for unbuffered channel of os.Signal\n\nThis checker reports call expression of the form\n\n\tsignal.Notify(c <-chan os.Signal, sig ...os.Signal),\n\nwhere c is an unbuffered channel, which can be at risk of missing the signal.",
                           "type": "boolean",
                           "default": true
                         },
@@ -390,6 +395,11 @@
                         },
                         "stdmethods": {
                           "markdownDescription": "check signature of methods of well-known interfaces\n\nSometimes a type may be intended to satisfy an interface but may fail to\ndo so because of a mistake in its method signature.\nFor example, the result of this WriteTo method should be (int64, error),\nnot error, to satisfy io.WriterTo:\n\n\ttype myWriterTo struct{...}\n\tfunc (myWriterTo) WriteTo(w io.Writer) error { ... }\n\nThis check ensures that each method whose name matches one of several\nwell-known interface methods from the standard library has the correct\nsignature for that interface.\n\nChecked method names include:\n\n\tFormat GobEncode GobDecode MarshalJSON MarshalXML\n\tPeek ReadByte ReadFrom ReadRune Scan Seek\n\tUnmarshalJSON UnreadByte UnreadRune WriteByte\n\tWriteTo",
+                          "type": "boolean",
+                          "default": true
+                        },
+                        "stdversion": {
+                          "markdownDescription": "report uses of too-new standard library symbols\n\nThe stdversion analyzer reports references to symbols in the standard\nlibrary that were introduced by a Go release higher than the one in\nforce in the referring file. (Recall that the file's Go version is\ndefined by the 'go' directive its module's go.mod file, or by a\n\"//go:build go1.X\" build tag at the top of the file.)\n\nThe analyzer does not report a diagnostic for a reference to a \"too\nnew\" field or method of a type that is itself \"too new\", as this may\nhave false positives, for example if fields or methods are accessed\nthrough a type alias that is guarded by a Go version constraint.\n",
                           "type": "boolean",
                           "default": true
                         },
@@ -461,7 +471,7 @@
                         "unusedwrite": {
                           "markdownDescription": "checks for unused writes\n\nThe analyzer reports instances of writes to struct fields and\narrays that are never read. Specifically, when a struct object\nor an array is copied, its elements are copied implicitly by\nthe compiler, and any element write to this copy does nothing\nwith the original object.\n\nFor example:\n\n\ttype T struct { x int }\n\n\tfunc f(input []T) {\n\t\tfor i, v := range input {  // v is a copy\n\t\t\tv.x = i  // unused write to field x\n\t\t}\n\t}\n\nAnother example is about non-pointer receiver:\n\n\ttype T struct { x int }\n\n\tfunc (t T) f() {  // t is a copy\n\t\tt.x = i  // unused write to field x\n\t}",
                           "type": "boolean",
-                          "default": false
+                          "default": true
                         },
                         "useany": {
                           "markdownDescription": "check for constraints that could be simplified to \"any\"",
@@ -476,36 +486,14 @@
                       "markdownDescription": "(experimental) staticcheck enables additional analyses from staticcheck.io.\nThese analyses are documented on\n[Staticcheck's website](https://staticcheck.io/docs/checks/).\n"
                     },
                     "gopls.annotations": {
-                      "type": "object",
+                      "type": "map[enum]bool",
                       "default": {
                         "bounds": true,
                         "escape": true,
                         "inline": true,
                         "nil": true
                       },
-                      "markdownDescription": "(experimental) annotations specifies the various kinds of optimization diagnostics\nthat should be reported by the gc_details command.\n",
-                      "properties": {
-                        "bounds": {
-                          "markdownDescription": "`\"bounds\"` controls bounds checking diagnostics.\n",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "escape": {
-                          "markdownDescription": "`\"escape\"` controls diagnostics about escape choices.\n",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "inline": {
-                          "markdownDescription": "`\"inline\"` controls diagnostics about inlining choices.\n",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "nil": {
-                          "markdownDescription": "`\"nil\"` controls nil checks.\n",
-                          "type": "boolean",
-                          "default": true
-                        }
-                      }
+                      "markdownDescription": "(experimental) annotations specifies the various kinds of optimization diagnostics\nthat should be reported by the gc_details command.\n"
                     },
                     "gopls.vulncheck": {
                       "type": "string",
@@ -586,58 +574,17 @@
                       }
                     },
                     "gopls.codelenses": {
-                      "type": "object",
+                      "type": "map[enum]bool",
                       "default": {
                         "gc_details": false,
                         "generate": true,
                         "regenerate_cgo": true,
+                        "run_govulncheck": false,
                         "tidy": true,
                         "upgrade_dependency": true,
                         "vendor": true
                       },
-                      "markdownDescription": "codelenses overrides the enabled/disabled state of code lenses. See the\n\"Code Lenses\" section of the\n[Settings page](https://github.com/golang/tools/blob/master/gopls/doc/settings.md#code-lenses)\nfor the list of supported lenses.\n\nExample Usage:\n\n```json5\n\"gopls\": {\n...\n  \"codelenses\": {\n    \"generate\": false,  // Don't show the `go generate` lens.\n    \"gc_details\": true  // Show a code lens toggling the display of gc's choices.\n  }\n...\n}\n```\n",
-                      "properties": {
-                        "gc_details": {
-                          "markdownDescription": "Toggle the calculation of gc annotations.",
-                          "type": "boolean",
-                          "default": false
-                        },
-                        "generate": {
-                          "markdownDescription": "Runs `go generate` for a given directory.",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "regenerate_cgo": {
-                          "markdownDescription": "Regenerates cgo definitions.",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "run_govulncheck": {
-                          "markdownDescription": "Run vulnerability check (`govulncheck`).",
-                          "type": "boolean",
-                          "default": false
-                        },
-                        "test": {
-                          "markdownDescription": "Runs `go test` for a specific set of test or benchmark functions.",
-                          "type": "boolean",
-                          "default": false
-                        },
-                        "tidy": {
-                          "markdownDescription": "Runs `go mod tidy` for a module.",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "upgrade_dependency": {
-                          "markdownDescription": "Upgrades a dependency in the go.mod file for a module.",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "vendor": {
-                          "markdownDescription": "Runs `go mod vendor` for a module.",
-                          "type": "boolean",
-                          "default": true
-                        }
-                      }
+                      "markdownDescription": "codelenses overrides the enabled/disabled state of each of gopls'\nsources of [Code Lenses](codelenses.md).\n\nExample Usage:\n\n```json5\n\"gopls\": {\n...\n  \"codelenses\": {\n    \"generate\": false,  // Don't show the `go generate` lens.\n    \"gc_details\": true  // Show a code lens toggling the display of gc's choices.\n  }\n...\n}\n```\n"
                     },
                     "gopls.semanticTokens": {
                       "type": "boolean",
