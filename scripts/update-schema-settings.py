@@ -61,6 +61,7 @@ SCHEMA_TEMPLATE = {
 }
 
 TYPE_MAP = {
+    "any": "any",
     "[]string": "array",
     "map[string]string": "object",
     "enum": "enum",
@@ -139,7 +140,9 @@ class GoplsGenerator:
         raw_settings = raw_schema["Options"]["User"]
         for _, value in enumerate(raw_settings):
             current_key = f"gopls.{value['Name']}"
-            current_type = TYPE_MAP[value["Type"]]
+            print(current_key)
+            print(value["Type"])
+            current_type = TYPE_MAP.get(value["Type"], value["Type"])
             resolved_type = current_type
 
             if resolved_type == "enum":
