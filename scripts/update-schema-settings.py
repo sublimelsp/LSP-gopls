@@ -64,6 +64,7 @@ TYPE_MAP = {
     "any": "any",
     "[]string": "array",
     "map[string]string": "object",
+    "map[enum]bool": "object",
     "enum": "enum",
     "bool": "boolean",
     "string": "string",
@@ -140,13 +141,13 @@ class GoplsGenerator:
         raw_settings = raw_schema["Options"]["User"]
         for _, value in enumerate(raw_settings):
             current_key = f"gopls.{value['Name']}"
-            print(current_key)
-            print(value["Type"])
             current_type = TYPE_MAP.get(value["Type"], value["Type"])
             resolved_type = current_type
 
             if resolved_type == "enum":
                 resolved_type = "string"
+            elif resolved_type == "any" and value["Name"]:
+                resolved_type = ["boolean", "string"]
 
             markdown_description = value["Doc"]
             if value.get("Status", "") != "":
