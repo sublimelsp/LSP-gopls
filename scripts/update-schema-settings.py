@@ -1,9 +1,9 @@
 #! /usr/local/bin/python3
 
-from typing import Union, Dict
-import subprocess
 import json
 import os
+import subprocess
+from typing import Dict, Union
 
 PACKAGE_PATH = os.path.join(os.path.dirname(__file__), "..")
 
@@ -139,19 +139,16 @@ class GoplsGenerator:
 
         raw_schema = self.to_json(data)
         raw_settings = raw_schema["Options"]["User"]
-        for _, value in enumerate(raw_settings):
+        for value in raw_settings:
             current_key = f"gopls.{value['Name']}"
             current_type = TYPE_MAP.get(value["Type"], value["Type"])
-            resolved_type = current_type
+            resolved_type = "string" if current_type == "enum" else current_type
 
-            if resolved_type == "enum":
-                resolved_type = "string"
-            elif resolved_type == "any" and value["Name"]:
-                resolved_type = ["boolean", "string"]
-
-            markdown_description = value["Doc"]
-            if value.get("Status", "") != "":
-                markdown_description = f"({value.get('Status', '')}) {value['Doc']}"
+            markdown_description = (
+                f"({value.get('Status', '')}) {value['Doc']}"
+                if value.get("Status", "")
+                else value["Doc"]
+            )
 
             self.properties[current_key] = {
                 "type": resolved_type,
@@ -160,15 +157,13 @@ class GoplsGenerator:
             }
 
             if current_type == "enum":
-                self.properties[current_key]["enum"] = []
-                self.properties[current_key]["markdownEnumDescriptions"] = []
-                for _, enum in enumerate(value["EnumValues"]):
-                    self.properties[current_key]["enum"].append(
-                        json.loads(enum["Value"])
-                    )
-                    self.properties[current_key]["markdownEnumDescriptions"].append(
-                        enum.get("Doc", "").removeprefix("`{}`: ".format(enum["Value"]))
-                    )
+                self.properties[current_key]["enum"] = [
+                    json.loads(enum["Value"]) for enum in value["EnumValues"]
+                ]
+                self.properties[current_key]["markdownEnumDescriptions"] = [
+                    enum.get("Doc", "").removeprefix(f"`{enum['Value']}`: ")
+                    for enum in value["EnumValues"]
+                ]
             elif current_type == "object":
                 self.properties[current_key]["properties"] = {}
                 keys = value["EnumKeys"]["Keys"]
@@ -176,7 +171,7 @@ class GoplsGenerator:
                     continue
 
                 enum_type = TYPE_MAP[value["EnumKeys"].get("ValueType", "bool")]
-                for _, enum in enumerate(keys):
+                for enum in keys:
                     property_name = json.loads(enum["Name"])
                     self.properties[current_key]["properties"][property_name] = {
                         "markdownDescription": enum["Doc"],
