@@ -74,6 +74,10 @@ TYPE_MAP = {
     "": "boolean",
 }
 
+TYPE_OVERRIDE_BY_KEY = {
+    "gopls.linksInHover": ["string", "boolean"],
+}
+
 # Custom LSP-gopls settings not provided by gopls directly
 CUSTOM_PROPERTIES = {
     "manageGoplsBinary": {
@@ -141,7 +145,10 @@ class GoplsGenerator:
         raw_settings = raw_schema["Options"]["User"]
         for value in raw_settings:
             current_key = f"gopls.{value['Name']}"
-            current_type = TYPE_MAP.get(value["Type"], value["Type"])
+            if current_key in TYPE_OVERRIDE_BY_KEY:
+                current_type = TYPE_OVERRIDE_BY_KEY[current_key]
+            else:
+                current_type = TYPE_MAP.get(value["Type"], value["Type"])
             resolved_type = "string" if current_type == "enum" else current_type
 
             markdown_description = (
