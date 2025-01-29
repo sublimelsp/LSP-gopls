@@ -55,7 +55,7 @@
                     "gopls.templateExtensions": {
                       "type": "array",
                       "default": [],
-                      "markdownDescription": "templateExtensions gives the extensions of file names that are treateed\nas template files. (The extension\nis the part of the file name after the final dot.)\n"
+                      "markdownDescription": "templateExtensions gives the extensions of file names that are treated\nas template files. (The extension\nis the part of the file name after the final dot.)\n"
                     },
                     "gopls.memoryMode": {
                       "type": "string",
@@ -66,11 +66,6 @@
                       "type": "boolean",
                       "default": true,
                       "markdownDescription": "(experimental) expandWorkspaceToModule determines which packages are considered\n\"workspace packages\" when the workspace is using modules.\n\nWorkspace packages affect the scope of workspace-wide operations. Notably,\ngopls diagnoses all packages considered to be part of the workspace after\nevery keystroke, so by setting \"ExpandWorkspaceToModule\" to false, and\nopening a nested workspace directory, you can reduce the amount of work\ngopls has to do to keep your workspace up to date.\n"
-                    },
-                    "gopls.allowImplicitNetworkAccess": {
-                      "type": "boolean",
-                      "default": false,
-                      "markdownDescription": "(experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module\ndownloads rather than requiring user action. This option will eventually\nbe removed.\n"
                     },
                     "gopls.standaloneTags": {
                       "type": "array",
@@ -101,7 +96,7 @@
                     "gopls.linkTarget": {
                       "type": "string",
                       "default": "pkg.go.dev",
-                      "markdownDescription": "linkTarget controls where documentation links go.\nIt might be one of:\n\n* `\"godoc.org\"`\n* `\"pkg.go.dev\"`\n\nIf company chooses to use its own `godoc.org`, its address can be used as well.\n\nModules matching the GOPRIVATE environment variable will not have\ndocumentation links in hover.\n"
+                      "markdownDescription": "linkTarget is the base URL for links to Go package\ndocumentation returned by LSP operations such as Hover and\nDocumentLinks and in the CodeDescription field of each\nDiagnostic.\n\nIt might be one of:\n\n* `\"godoc.org\"`\n* `\"pkg.go.dev\"`\n\nIf company chooses to use its own `godoc.org`, its address can be used as well.\n\nModules matching the GOPRIVATE environment variable will not have\ndocumentation links in hover.\n"
                     },
                     "gopls.linksInHover": {
                       "type": [
@@ -109,7 +104,7 @@
                         "boolean"
                       ],
                       "default": true,
-                      "markdownDescription": "linksInHover controls the presence of documentation links\nin hover markdown.\n\nIts legal values are:\n- `false`, for no links;\n- `true`, for links to the `linkTarget` domain; or\n- `\"gopls\"`, for links to gopls' internal documentation viewer.\n"
+                      "markdownDescription": "linksInHover controls the presence of documentation links in hover markdown.\n"
                     },
                     "gopls.usePlaceholders": {
                       "type": "boolean",
@@ -291,11 +286,6 @@
                           "type": "boolean",
                           "default": true
                         },
-                        "fieldalignment": {
-                          "markdownDescription": "find structs that would use less memory if their fields were sorted\n\nThis analyzer find structs that can be rearranged to use less memory, and provides\na suggested edit with the most compact order.\n\nNote that there are two different diagnostics reported. One checks struct size,\nand the other reports \"pointer bytes\" used. Pointer bytes is how many bytes of the\nobject that the garbage collector has to potentially scan for pointers, for example:\n\n\tstruct { uint32; string }\n\nhave 16 pointer bytes because the garbage collector has to scan up through the string's\ninner pointer.\n\n\tstruct { string; *uint32 }\n\nhas 24 pointer bytes because it has to scan further through the *uint32.\n\n\tstruct { string; uint32 }\n\nhas 8 because it can stop immediately after the string pointer.\n\nBe aware that the most compact order is not always the most efficient.\nIn rare cases it may cause two variables each updated by its own goroutine\nto occupy the same CPU cache line, inducing a form of memory contention\nknown as \"false sharing\" that slows down both goroutines.\n",
-                          "type": "boolean",
-                          "default": false
-                        },
                         "fillreturns": {
                           "markdownDescription": "suggest fixes for errors due to an incorrect number of return values\n\nThis checker provides suggested fixes for type errors of the\ntype \"wrong number of return values (want %d, got %d)\". For example:\n\n\tfunc m() (int, string, *bool, error) {\n\t\treturn\n\t}\n\nwill turn into\n\n\tfunc m() (int, string, *bool, error) {\n\t\treturn 0, \"\", nil, nil\n\t}\n\nThis functionality is similar to https://github.com/sqs/goreturns.",
                           "type": "boolean",
@@ -327,7 +317,7 @@
                           "default": true
                         },
                         "lostcancel": {
-                          "markdownDescription": "check cancel func returned by context.WithCancel is called\n\nThe cancellation function returned by context.WithCancel, WithTimeout,\nand WithDeadline must be called or the new context will remain live\nuntil its parent context is cancelled.\n(The background context is never cancelled.)",
+                          "markdownDescription": "check cancel func returned by context.WithCancel is called\n\nThe cancellation function returned by context.WithCancel, WithTimeout,\nWithDeadline and variants such as WithCancelCause must be called,\nor the new context will remain live until its parent context is cancelled.\n(The background context is never cancelled.)",
                           "type": "boolean",
                           "default": true
                         },
@@ -372,17 +362,17 @@
                           "default": true
                         },
                         "simplifycompositelit": {
-                          "markdownDescription": "check for composite literal simplifications\n\nAn array, slice, or map composite literal of the form:\n\n\t[]T{T{}, T{}}\n\nwill be simplified to:\n\n\t[]T{{}, {}}\n\nThis is one of the simplifications that \"gofmt -s\" applies.",
+                          "markdownDescription": "check for composite literal simplifications\n\nAn array, slice, or map composite literal of the form:\n\n\t[]T{T{}, T{}}\n\nwill be simplified to:\n\n\t[]T{{}, {}}\n\nThis is one of the simplifications that \"gofmt -s\" applies.\n\nThis analyzer ignores generated code.",
                           "type": "boolean",
                           "default": true
                         },
                         "simplifyrange": {
-                          "markdownDescription": "check for range statement simplifications\n\nA range of the form:\n\n\tfor x, _ = range v {...}\n\nwill be simplified to:\n\n\tfor x = range v {...}\n\nA range of the form:\n\n\tfor _ = range v {...}\n\nwill be simplified to:\n\n\tfor range v {...}\n\nThis is one of the simplifications that \"gofmt -s\" applies.",
+                          "markdownDescription": "check for range statement simplifications\n\nA range of the form:\n\n\tfor x, _ = range v {...}\n\nwill be simplified to:\n\n\tfor x = range v {...}\n\nA range of the form:\n\n\tfor _ = range v {...}\n\nwill be simplified to:\n\n\tfor range v {...}\n\nThis is one of the simplifications that \"gofmt -s\" applies.\n\nThis analyzer ignores generated code.",
                           "type": "boolean",
                           "default": true
                         },
                         "simplifyslice": {
-                          "markdownDescription": "check for slice simplifications\n\nA slice expression of the form:\n\n\ts[a:len(s)]\n\nwill be simplified to:\n\n\ts[a:]\n\nThis is one of the simplifications that \"gofmt -s\" applies.",
+                          "markdownDescription": "check for slice simplifications\n\nA slice expression of the form:\n\n\ts[a:len(s)]\n\nwill be simplified to:\n\n\ts[a:]\n\nThis is one of the simplifications that \"gofmt -s\" applies.\n\nThis analyzer ignores generated code.",
                           "type": "boolean",
                           "default": true
                         },
@@ -416,11 +406,6 @@
                           "type": "boolean",
                           "default": true
                         },
-                        "stubmethods": {
-                          "markdownDescription": "detect missing methods and fix with stub implementations\n\nThis analyzer detects type-checking errors due to missing methods\nin assignments from concrete types to interface types, and offers\na suggested fix that will create a set of stub methods so that\nthe concrete type satisfies the interface.\n\nFor example, this function will not compile because the value\nNegativeErr{} does not implement the \"error\" interface:\n\n\tfunc sqrt(x float64) (float64, error) {\n\t\tif x < 0 {\n\t\t\treturn 0, NegativeErr{} // error: missing method\n\t\t}\n\t\t...\n\t}\n\n\ttype NegativeErr struct{}\n\nThis analyzer will suggest a fix to declare this method:\n\n\t// Error implements error.Error.\n\tfunc (NegativeErr) Error() string {\n\t\tpanic(\"unimplemented\")\n\t}\n\n(At least, it appears to behave that way, but technically it\ndoesn't use the SuggestedFix mechanism and the stub is created by\nlogic in gopls's golang.stub function.)",
-                          "type": "boolean",
-                          "default": true
-                        },
                         "testinggoroutine": {
                           "markdownDescription": "report calls to (*testing.T).Fatal from goroutines started by a test\n\nFunctions that abruptly terminate a test, such as the Fatal, Fatalf, FailNow, and\nSkip{,f,Now} methods of *testing.T, must be called from the test goroutine itself.\nThis checker detects calls to these functions that occur within a goroutine\nstarted by the test. For example:\n\n\tfunc TestFoo(t *testing.T) {\n\t    go func() {\n\t        t.Fatal(\"oops\") // error: (*T).Fatal called from non-test goroutine\n\t    }()\n\t}",
                           "type": "boolean",
@@ -433,11 +418,6 @@
                         },
                         "timeformat": {
                           "markdownDescription": "check for calls of (time.Time).Format or time.Parse with 2006-02-01\n\nThe timeformat checker looks for time formats with the 2006-02-01 (yyyy-dd-mm)\nformat. Internationally, \"yyyy-dd-mm\" does not occur in common calendar date\nstandards, and so it is more likely that 2006-01-02 (yyyy-mm-dd) was intended.",
-                          "type": "boolean",
-                          "default": true
-                        },
-                        "undeclaredname": {
-                          "markdownDescription": "suggested fixes for \"undeclared name: <>\"\n\nThis checker provides suggested fixes for type errors of the\ntype \"undeclared name: <>\". It will either insert a new statement,\nsuch as:\n\n\t<> :=\n\nor a new function declaration, such as:\n\n\tfunc <>(inferred parameters) {\n\t\tpanic(\"implement me!\")\n\t}",
                           "type": "boolean",
                           "default": true
                         },
@@ -480,6 +460,16 @@
                           "markdownDescription": "check for constraints that could be simplified to \"any\"",
                           "type": "boolean",
                           "default": false
+                        },
+                        "waitgroup": {
+                          "markdownDescription": "check for misuses of sync.WaitGroup\n\nThis analyzer detects mistaken calls to the (*sync.WaitGroup).Add\nmethod from inside a new goroutine, causing Add to race with Wait:\n\n\t// WRONG\n\tvar wg sync.WaitGroup\n\tgo func() {\n\t        wg.Add(1) // \"WaitGroup.Add called from inside new goroutine\"\n\t        defer wg.Done()\n\t        ...\n\t}()\n\twg.Wait() // (may return prematurely before new goroutine starts)\n\nThe correct code calls Add before starting the goroutine:\n\n\t// RIGHT\n\tvar wg sync.WaitGroup\n\twg.Add(1)\n\tgo func() {\n\t\tdefer wg.Done()\n\t\t...\n\t}()\n\twg.Wait()",
+                          "type": "boolean",
+                          "default": true
+                        },
+                        "yield": {
+                          "markdownDescription": "report calls to yield where the result is ignored\n\nAfter a yield function returns false, the caller should not call\nthe yield function again; generally the iterator should return\npromptly.\n\nThis example fails to check the result of the call to yield,\ncausing this analyzer to report a diagnostic:\n\n\tyield(1) // yield may be called again (on L2) after returning false\n\tyield(2)\n\nThe corrected code is either this:\n\n\tif yield(1) { yield(2) }\n\nor simply:\n\n\t_ = yield(1) && yield(2)\n\nIt is not always a mistake to ignore the result of yield.\nFor example, this is a valid single-element iterator:\n\n\tyield(1) // ok to ignore result\n\treturn\n\nIt is only a mistake when the yield call that returned false may be\nfollowed by another call.",
+                          "type": "boolean",
+                          "default": true
                         }
                       }
                     },
@@ -562,37 +552,37 @@
                       "markdownDescription": "(experimental) hints specify inlay hints that users want to see. A full list of hints\nthat gopls uses can be found in\n[inlayHints.md](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).\n",
                       "properties": {
                         "assignVariableTypes": {
-                          "markdownDescription": "Enable/disable inlay hints for variable types in assign statements:\n```go\n\ti/* int*/, j/* int*/ := 0, len(r)-1\n```",
+                          "markdownDescription": "`\"assignVariableTypes\"` controls inlay hints for variable types in assign statements:\n```go\n\ti/* int*/, j/* int*/ := 0, len(r)-1\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "compositeLiteralFields": {
-                          "markdownDescription": "Enable/disable inlay hints for composite literal field names:\n```go\n\t{/*in: */\"Hello, world\", /*want: */\"dlrow ,olleH\"}\n```",
+                          "markdownDescription": "`\"compositeLiteralFields\"` inlay hints for composite literal field names:\n```go\n\t{/*in: */\"Hello, world\", /*want: */\"dlrow ,olleH\"}\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "compositeLiteralTypes": {
-                          "markdownDescription": "Enable/disable inlay hints for composite literal types:\n```go\n\tfor _, c := range []struct {\n\t\tin, want string\n\t}{\n\t\t/*struct{ in string; want string }*/{\"Hello, world\", \"dlrow ,olleH\"},\n\t}\n```",
+                          "markdownDescription": "`\"compositeLiteralTypes\"` controls inlay hints for composite literal types:\n```go\n\tfor _, c := range []struct {\n\t\tin, want string\n\t}{\n\t\t/*struct{ in string; want string }*/{\"Hello, world\", \"dlrow ,olleH\"},\n\t}\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "constantValues": {
-                          "markdownDescription": "Enable/disable inlay hints for constant values:\n```go\n\tconst (\n\t\tKindNone   Kind = iota/* = 0*/\n\t\tKindPrint/*  = 1*/\n\t\tKindPrintf/* = 2*/\n\t\tKindErrorf/* = 3*/\n\t)\n```",
+                          "markdownDescription": "`\"constantValues\"` controls inlay hints for constant values:\n```go\n\tconst (\n\t\tKindNone   Kind = iota/* = 0*/\n\t\tKindPrint/*  = 1*/\n\t\tKindPrintf/* = 2*/\n\t\tKindErrorf/* = 3*/\n\t)\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "functionTypeParameters": {
-                          "markdownDescription": "Enable/disable inlay hints for implicit type parameters on generic functions:\n```go\n\tmyFoo/*[int, string]*/(1, \"hello\")\n```",
+                          "markdownDescription": "`\"functionTypeParameters\"` inlay hints for implicit type parameters on generic functions:\n```go\n\tmyFoo/*[int, string]*/(1, \"hello\")\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "parameterNames": {
-                          "markdownDescription": "Enable/disable inlay hints for parameter names:\n```go\n\tparseInt(/* str: */ \"123\", /* radix: */ 8)\n```",
+                          "markdownDescription": "`\"parameterNames\"` controls inlay hints for parameter names:\n```go\n\tparseInt(/* str: */ \"123\", /* radix: */ 8)\n```\n",
                           "type": "boolean",
                           "default": false
                         },
                         "rangeVariableTypes": {
-                          "markdownDescription": "Enable/disable inlay hints for variable types in range statements:\n```go\n\tfor k/* int*/, v/* string*/ := range []string{} {\n\t\tfmt.Println(k, v)\n\t}\n```",
+                          "markdownDescription": "`\"rangeVariableTypes\"` controls inlay hints for variable types in range statements:\n```go\n\tfor k/* int*/, v/* string*/ := range []string{} {\n\t\tfmt.Println(k, v)\n\t}\n```\n",
                           "type": "boolean",
                           "default": false
                         }
@@ -627,7 +617,7 @@
                           "default": true
                         },
                         "run_govulncheck": {
-                          "markdownDescription": "`\"run_govulncheck\"`: Run govulncheck\n\nThis codelens source annotates the `module` directive in a\ngo.mod file with a command to run Govulncheck.\n\n[Govulncheck](https://go.dev/blog/vuln) is a static\nanalysis tool that computes the set of functions reachable\nwithin your application, including dependencies;\nqueries a database of known security vulnerabilities; and\nreports any potential problems it finds.\n",
+                          "markdownDescription": "`\"run_govulncheck\"`: Run govulncheck (legacy)\n\nThis codelens source annotates the `module` directive in a go.mod file\nwith a command to run Govulncheck asynchronously.\n\n[Govulncheck](https://go.dev/blog/vuln) is a static analysis tool that\ncomputes the set of functions reachable within your application, including\ndependencies; queries a database of known security vulnerabilities; and\nreports any potential problems it finds.\n",
                           "type": "boolean",
                           "default": false
                         },
@@ -650,6 +640,11 @@
                           "markdownDescription": "`\"vendor\"`: Update vendor directory\n\nThis codelens source annotates the `module` directive in a\ngo.mod file with a command to run [`go mod\nvendor`](https://go.dev/ref/mod#go-mod-vendor), which\ncreates or updates the directory named `vendor` in the\nmodule root so that it contains an up-to-date copy of all\nnecessary package dependencies.\n",
                           "type": "boolean",
                           "default": true
+                        },
+                        "vulncheck": {
+                          "markdownDescription": "`\"vulncheck\"`: Run govulncheck\n\nThis codelens source annotates the `module` directive in a go.mod file\nwith a command to run govulncheck synchronously.\n\n[Govulncheck](https://go.dev/blog/vuln) is a static analysis tool that\ncomputes the set of functions reachable within your application, including\ndependencies; queries a database of known security vulnerabilities; and\nreports any potential problems it finds.\n",
+                          "type": "boolean",
+                          "default": false
                         }
                       }
                     },
@@ -671,7 +666,7 @@
                     "gopls.local": {
                       "type": "string",
                       "default": "",
-                      "markdownDescription": "local is the equivalent of the `goimports -local` flag, which puts\nimports beginning with this string after third-party packages. It should\nbe the prefix of the import path whose imports should be grouped\nseparately.\n"
+                      "markdownDescription": "local is the equivalent of the `goimports -local` flag, which puts\nimports beginning with this string after third-party packages. It should\nbe the prefix of the import path whose imports should be grouped\nseparately.\n\nIt is used when tidying imports (during an LSP Organize\nImports request) or when inserting new ones (for example,\nduring completion); an LSP Formatting request merely sorts the\nexisting imports.\n"
                     },
                     "gopls.gofumpt": {
                       "type": "boolean",

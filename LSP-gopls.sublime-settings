@@ -49,7 +49,7 @@
       "-**/node_modules"
     ],
 
-    // templateExtensions gives the extensions of file names that are treateed
+    // templateExtensions gives the extensions of file names that are treated
     // as template files. (The extension
     // is the part of the file name after the final dot.)
     //
@@ -69,12 +69,6 @@
     // gopls has to do to keep your workspace up to date.
     //
     "gopls.expandWorkspaceToModule": true,
-
-    // (experimental) allowImplicitNetworkAccess disables GOPROXY=off, allowing implicit module
-    // downloads rather than requiring user action. This option will eventually
-    // be removed.
-    //
-    "gopls.allowImplicitNetworkAccess": false,
 
     // standaloneTags specifies a set of build constraints that identify
     // individual Go source files that make up the entire main package of an
@@ -104,7 +98,11 @@
     //
     "gopls.hoverKind": "FullDocumentation",
 
-    // linkTarget controls where documentation links go.
+    // linkTarget is the base URL for links to Go package
+    // documentation returned by LSP operations such as Hover and
+    // DocumentLinks and in the CodeDescription field of each
+    // Diagnostic.
+    //
     // It might be one of:
     //
     // * `"godoc.org"`
@@ -117,13 +115,7 @@
     //
     "gopls.linkTarget": "pkg.go.dev",
 
-    // linksInHover controls the presence of documentation links
-    // in hover markdown.
-    //
-    // Its legal values are:
-    // - `false`, for no links;
-    // - `true`, for links to the `linkTarget` domain; or
-    // - `"gopls"`, for links to gopls' internal documentation viewer.
+    // linksInHover controls the presence of documentation links in hover markdown.
     //
     "gopls.linksInHover": true,
 
@@ -300,6 +292,11 @@
     // imports beginning with this string after third-party packages. It should
     // be the prefix of the import path whose imports should be grouped
     // separately.
+    //
+    // It is used when tidying imports (during an LSP Organize
+    // Imports request) or when inserting new ones (for example,
+    // during completion); an LSP Formatting request merely sorts the
+    // existing imports.
     //
     "gopls.local": "",
 
