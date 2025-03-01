@@ -93,8 +93,17 @@
       "ignore"
     ],
 
+    // workspaceFiles configures the set of globs that match files defining the
+    // logical build of the current workspace. Any on-disk changes to any files
+    // matching a glob specified here will trigger a reload of the workspace.
+    //
+    // This setting need only be customized in environments with a custom
+    // GOPACKAGESDRIVER.
+    //
+    "gopls.workspaceFiles": [],
+
     // hoverKind controls the information that appears in the hover text.
-    // SingleLine and Structured are intended for use only by authors of editor plugins.
+    // SingleLine is intended for use only by authors of editor plugins.
     //
     "gopls.hoverKind": "FullDocumentation",
 
@@ -204,16 +213,6 @@
     //
     "gopls.staticcheck": false,
 
-    // (experimental) annotations specifies the various kinds of optimization diagnostics
-    // that should be reported by the gc_details command.
-    //
-    "gopls.annotations": {
-      "bounds": true,
-      "escape": true,
-      "inline": true,
-      "nil": true
-    },
-
     // (experimental) vulncheck enables vulnerability scanning.
     //
     "gopls.vulncheck": "Off",
@@ -259,14 +258,12 @@
     // ...
     //   "codelenses": {
     //     "generate": false,  // Don't show the `go generate` lens.
-    //     "gc_details": true  // Show a code lens toggling the display of gc's choices.
     //   }
     // ...
     // }
     // ```
     //
     "gopls.codelenses": {
-      "gc_details": false,
       "generate": true,
       "regenerate_cgo": true,
       "run_govulncheck": false,
@@ -282,11 +279,29 @@
 
     // (experimental) noSemanticString turns off the sending of the semantic token 'string'
     //
+    // Deprecated: Use SemanticTokenTypes["string"] = false instead. See
+    // golang/vscode-go#3632
+    //
     "gopls.noSemanticString": false,
 
-    // (experimental) noSemanticNumber  turns off the sending of the semantic token 'number'
+    // (experimental) noSemanticNumber turns off the sending of the semantic token 'number'
+    //
+    // Deprecated: Use SemanticTokenTypes["number"] = false instead. See
+    // golang/vscode-go#3632.
     //
     "gopls.noSemanticNumber": false,
+
+    // (experimental) semanticTokenTypes configures the semantic token types. It allows
+    // disabling types by setting each value to false.
+    // By default, all types are enabled.
+    //
+    "gopls.semanticTokenTypes": {},
+
+    // (experimental) semanticTokenModifiers configures the semantic token modifiers. It allows
+    // disabling modifiers by setting each value to false.
+    // By default, all modifiers are enabled.
+    //
+    "gopls.semanticTokenModifiers": {},
 
     // local is the equivalent of the `goimports -local` flag, which puts
     // imports beginning with this string after third-party packages. It should
