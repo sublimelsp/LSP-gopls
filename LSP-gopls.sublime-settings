@@ -55,10 +55,6 @@
     //
     "gopls.templateExtensions": [],
 
-    // (experimental) obsolete, no effect
-    //
-    "gopls.memoryMode": "",
-
     // (experimental) expandWorkspaceToModule determines which packages are considered
     // "workspace packages" when the workspace is using modules.
     //
@@ -207,11 +203,40 @@
     //
     "gopls.analyses": {},
 
-    // (experimental) staticcheck enables additional analyses from staticcheck.io.
+    // (experimental) staticcheck configures the default set of analyses staticcheck.io.
     // These analyses are documented on
     // [Staticcheck's website](https://staticcheck.io/docs/checks/).
     //
+    // The "staticcheck" option has three values:
+    // - false: disable all staticcheck analyzers
+    // - true: enable all staticcheck analyzers
+    // - unset: enable a subset of staticcheck analyzers
+    //   selected by gopls maintainers for runtime efficiency
+    //   and analytic precision.
+    //
+    // Regardless of this setting, individual analyzers can be
+    // selectively enabled or disabled using the `analyses` setting.
+    //
     "gopls.staticcheck": false,
+
+    // annotations specifies the various kinds of compiler
+    // optimization details that should be reported as diagnostics
+    // when enabled for a package by the "Toggle compiler
+    // optimization details" (`gopls.gc_details`) command.
+    //
+    // (Some users care only about one kind of annotation in their
+    // profiling efforts. More importantly, in large packages, the
+    // number of annotations can sometimes overwhelm the user
+    // interface and exceed the per-file diagnostic limit.)
+    //
+    // TODO(adonovan): rename this field to CompilerOptDetail.
+    //
+    "gopls.annotations": {
+      "bounds": true,
+      "escape": true,
+      "inline": true,
+      "nil": true
+    },
 
     // (experimental) vulncheck enables vulnerability scanning.
     //
@@ -276,20 +301,6 @@
     // semantic tokens to the client.
     //
     "gopls.semanticTokens": false,
-
-    // (experimental) noSemanticString turns off the sending of the semantic token 'string'
-    //
-    // Deprecated: Use SemanticTokenTypes["string"] = false instead. See
-    // golang/vscode-go#3632
-    //
-    "gopls.noSemanticString": false,
-
-    // (experimental) noSemanticNumber turns off the sending of the semantic token 'number'
-    //
-    // Deprecated: Use SemanticTokenTypes["number"] = false instead. See
-    // golang/vscode-go#3632.
-    //
-    "gopls.noSemanticNumber": false,
 
     // (experimental) semanticTokenTypes configures the semantic token types. It allows
     // disabling types by setting each value to false.
