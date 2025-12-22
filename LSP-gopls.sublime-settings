@@ -55,6 +55,10 @@
     //
     "gopls.templateExtensions": [],
 
+    // (experimental) obsolete, no effect
+    //
+    "gopls.memoryMode": "",
+
     // (experimental) expandWorkspaceToModule determines which packages are considered
     // "workspace packages" when the workspace is using modules.
     //
@@ -219,6 +223,9 @@
     //
     "gopls.staticcheck": false,
 
+    // (experimental)
+    "gopls.staticcheckProvided": false,
+
     // annotations specifies the various kinds of compiler
     // optimization details that should be reported as diagnostics
     // when enabled for a package by the "Toggle compiler
@@ -240,7 +247,7 @@
 
     // (experimental) vulncheck enables vulnerability scanning.
     //
-    "gopls.vulncheck": "Off",
+    "gopls.vulncheck": "Prompt",
 
     // (advanced) diagnosticsDelay controls the amount of time that gopls waits
     // after the most recent file modification before computing deep diagnostics.
@@ -291,7 +298,7 @@
     "gopls.codelenses": {
       "generate": true,
       "regenerate_cgo": true,
-      "run_govulncheck": false,
+      "run_govulncheck": true,
       "tidy": true,
       "upgrade_dependency": true,
       "vendor": true
@@ -301,6 +308,20 @@
     // semantic tokens to the client.
     //
     "gopls.semanticTokens": false,
+
+    // (experimental) noSemanticString turns off the sending of the semantic token 'string'
+    //
+    // Deprecated: Use SemanticTokenTypes["string"] = false instead. See
+    // golang/vscode-go#3632
+    //
+    "gopls.noSemanticString": false,
+
+    // (experimental) noSemanticNumber turns off the sending of the semantic token 'number'
+    //
+    // Deprecated: Use SemanticTokenTypes["number"] = false instead. See
+    // golang/vscode-go#3632.
+    //
+    "gopls.noSemanticNumber": false,
 
     // (experimental) semanticTokenTypes configures the semantic token types. It allows
     // disabling types by setting each value to false.
@@ -313,6 +334,16 @@
     // By default, all modifiers are enabled.
     //
     "gopls.semanticTokenModifiers": {},
+
+    // newGoFileHeader enables automatic insertion of the copyright comment
+    // and package declaration in a newly created Go file.
+    //
+    "gopls.newGoFileHeader": true,
+
+    // (experimental) renameMovesSubpackages enables Rename operations on packages to
+    // move subdirectories of the target package.
+    //
+    "gopls.renameMovesSubpackages": false,
 
     // local is the equivalent of the `goimports -local` flag, which puts
     // imports beginning with this string after third-party packages. It should
