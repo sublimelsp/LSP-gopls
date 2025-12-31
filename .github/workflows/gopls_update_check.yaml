@@ -38,7 +38,7 @@ jobs:
           go install golang.org/x/tools/gopls@v${{ needs.compareTag.outputs.latest_tag }}
       - uses: actions/setup-python@v6
         with:
-          python-version: '3.13'
+          python-version: '3.14'
       - name: Update VERSION
         run: |
           echo "VERSION = '${{ needs.compareTag.outputs.latest_tag }}'" > plugin/version.py
