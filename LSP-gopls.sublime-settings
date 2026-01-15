@@ -55,10 +55,6 @@
     //
     "gopls.templateExtensions": [],
 
-    // (experimental) obsolete, no effect
-    //
-    "gopls.memoryMode": "",
-
     // (experimental) expandWorkspaceToModule determines which packages are considered
     // "workspace packages" when the workspace is using modules.
     //
@@ -223,9 +219,6 @@
     //
     "gopls.staticcheck": false,
 
-    // (experimental)
-    "gopls.staticcheckProvided": false,
-
     // annotations specifies the various kinds of compiler
     // optimization details that should be reported as diagnostics
     // when enabled for a package by the "Toggle compiler
@@ -308,20 +301,6 @@
     // semantic tokens to the client.
     //
     "gopls.semanticTokens": false,
-
-    // (experimental) noSemanticString turns off the sending of the semantic token 'string'
-    //
-    // Deprecated: Use SemanticTokenTypes["string"] = false instead. See
-    // golang/vscode-go#3632
-    //
-    "gopls.noSemanticString": false,
-
-    // (experimental) noSemanticNumber turns off the sending of the semantic token 'number'
-    //
-    // Deprecated: Use SemanticTokenTypes["number"] = false instead. See
-    // golang/vscode-go#3632.
-    //
-    "gopls.noSemanticNumber": false,
 
     // (experimental) semanticTokenTypes configures the semantic token types. It allows
     // disabling types by setting each value to false.
