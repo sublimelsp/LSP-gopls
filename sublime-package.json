@@ -57,11 +57,6 @@
                       "default": [],
                       "markdownDescription": "templateExtensions gives the extensions of file names that are treated\nas template files. (The extension\nis the part of the file name after the final dot.)\n"
                     },
-                    "gopls.memoryMode": {
-                      "type": "string",
-                      "default": "",
-                      "markdownDescription": "(experimental) obsolete, no effect\n"
-                    },
                     "gopls.expandWorkspaceToModule": {
                       "type": "boolean",
                       "default": true,
@@ -1393,11 +1388,6 @@
                       "default": false,
                       "markdownDescription": "(experimental) staticcheck configures the default set of analyses staticcheck.io.\nThese analyses are documented on\n[Staticcheck's website](https://staticcheck.io/docs/checks/).\n\nThe \"staticcheck\" option has three values:\n- false: disable all staticcheck analyzers\n- true: enable all staticcheck analyzers\n- unset: enable a subset of staticcheck analyzers\n  selected by gopls maintainers for runtime efficiency\n  and analytic precision.\n\nRegardless of this setting, individual analyzers can be\nselectively enabled or disabled using the `analyses` setting.\n"
                     },
-                    "gopls.staticcheckProvided": {
-                      "type": "boolean",
-                      "default": false,
-                      "markdownDescription": "(experimental) "
-                    },
                     "gopls.annotations": {
                       "type": "object",
                       "default": {
@@ -1573,16 +1563,6 @@
                       "type": "boolean",
                       "default": false,
                       "markdownDescription": "(experimental) semanticTokens controls whether the LSP server will send\nsemantic tokens to the client.\n"
-                    },
-                    "gopls.noSemanticString": {
-                      "type": "boolean",
-                      "default": false,
-                      "markdownDescription": "(experimental) noSemanticString turns off the sending of the semantic token 'string'\n\nDeprecated: Use SemanticTokenTypes[\"string\"] = false instead. See\ngolang/vscode-go#3632\n"
-                    },
-                    "gopls.noSemanticNumber": {
-                      "type": "boolean",
-                      "default": false,
-                      "markdownDescription": "(experimental) noSemanticNumber turns off the sending of the semantic token 'number'\n\nDeprecated: Use SemanticTokenTypes[\"number\"] = false instead. See\ngolang/vscode-go#3632.\n"
                     },
                     "gopls.semanticTokenTypes": {
                       "type": "object",
