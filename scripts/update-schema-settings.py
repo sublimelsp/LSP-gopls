@@ -17,7 +17,7 @@ SCHEMA_TEMPLATE = {
                     "definitions": {
                         "PluginConfig": {
                             "properties": {
-                                "initializationOptions": {
+                                "initialization_options": {
                                     "additionalProperties": False,
                                     "type": "object",
                                     "properties": {},
