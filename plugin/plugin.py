@@ -1,28 +1,24 @@
-# Packages/LSP-gopls/plugin/plugin.py
+from __future__ import annotations
+
+from collections.abc import Mapping
+from typing import Any
+from typing import Callable
 import os
-
-import sublime
-
-from .version import VERSION
-from .constants import GOPLS_BASE_URL
-from .constants import RE_VER
-from .constants import SESSION_NAME
-
-from .utils import get_setting
-from .utils import get_settings
-from .utils import to_int
-from .utils import is_binary_available
-from .utils import run_go_command
 
 from LSP.plugin import AbstractPlugin
 from LSP.plugin import Session
 from LSP.plugin import parse_uri
-from LSP.plugin.core.typing import Any
-from LSP.plugin.core.typing import Optional
-from LSP.plugin.core.typing import Tuple
-from LSP.plugin.core.typing import Mapping
-from LSP.plugin.core.typing import Callable
-from LSP.plugin.core.typing import List
+import sublime
+
+from .constants import GOPLS_BASE_URL
+from .constants import RE_VER
+from .constants import SESSION_NAME
+from .utils import get_setting
+from .utils import get_settings
+from .utils import is_binary_available
+from .utils import run_go_command
+from .utils import to_int
+from .version import VERSION
 
 try:
     import Terminus  # type: ignore
@@ -32,8 +28,8 @@ except ImportError:
 
 def open_tests_in_terminus(
     session: Session,
-    window: Optional[sublime.Window],
-    arguments: Tuple[str, List[str], None],
+    window: sublime.Window | None,
+    arguments: tuple[str, list[str], None],
 ) -> None:
     if not window:
         return
@@ -77,7 +73,7 @@ class Gopls(AbstractPlugin):
         return VERSION
 
     @classmethod
-    def current_server_version(cls) -> Optional[str]:
+    def current_server_version(cls) -> str | None:
         try:
             with open(os.path.join(cls.basedir(), "VERSION"), "r") as fp:
                 return fp.read()
@@ -101,7 +97,7 @@ class Gopls(AbstractPlugin):
         return is_binary_available("go")
 
     @classmethod
-    def _get_go_version(cls) -> Tuple[int, int, int]:
+    def _get_go_version(cls) -> tuple[int, int, int]:
         stdout, stderr, return_code = run_go_command(
             sub_command="version", env_vars=cls._set_env_vars()
         )

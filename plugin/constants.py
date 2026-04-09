@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 
 PACKAGE_NAME = __package__.partition(".")[0]

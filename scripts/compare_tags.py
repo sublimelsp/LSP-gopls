@@ -1,9 +1,10 @@
-import re
+from __future__ import annotations
+
 import json
 import os
-from typing import Literal, Tuple
-
+import re
 import urllib.request
+from typing import Literal
 from urllib.error import URLError
 
 
@@ -21,7 +22,7 @@ class VersionChecker:
             print(f"Error while fetching tags from GitHub API: {e}")
             exit(1)
 
-    def get_latest_version(self, tags: list) -> Tuple[str, bool]:
+    def get_latest_version(self, tags: list) -> tuple[str, bool]:
         for tag in tags:
             if tag["tag_name"].startswith("gopls/v"):
                 unparsed_version = tag["name"].split("v")[1]
