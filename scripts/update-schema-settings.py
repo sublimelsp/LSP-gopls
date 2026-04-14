@@ -1,9 +1,10 @@
 #! /usr/local/bin/python3
 
+from __future__ import annotations
+
 import json
 import os
 import subprocess
-from typing import Dict, Union
 
 PACKAGE_PATH = os.path.join(os.path.dirname(__file__), "..")
 
@@ -119,7 +120,7 @@ class GoplsGenerator:
         self.gopls_settings = ""
 
     @classmethod
-    def _get_gopls_api_docs(cls) -> Union[str, None]:
+    def _get_gopls_api_docs(cls) -> str | None:
         process = subprocess.Popen(
             ["gopls", "api-json"],
             stdout=subprocess.PIPE,
@@ -133,7 +134,7 @@ class GoplsGenerator:
         return stdout
 
     @classmethod
-    def to_json(cls, content: str) -> Dict:
+    def to_json(cls, content: str) -> dict:
         return json.loads(content)
 
     def generate_schema(self):

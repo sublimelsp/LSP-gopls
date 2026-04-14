@@ -1,12 +1,12 @@
-import sublime
-import sublime_plugin
-
-from .types import GoplsStartDebuggingResponse
-from .constants import SESSION_NAME
+from __future__ import annotations
 
 from LSP.plugin import LspTextCommand
 from LSP.plugin import Request
-from LSP.plugin.core.typing import Optional
+import sublime
+import sublime_plugin
+
+from .constants import SESSION_NAME
+from .types import GoplsStartDebuggingResponse
 
 
 class GoplsCommand(LspTextCommand):
@@ -43,7 +43,7 @@ class GoplsStartDebuggingCommand(GoplsCommand):
         )
 
     def show_results_async(
-        self, response: Optional[GoplsStartDebuggingResponse]
+        self, response: GoplsStartDebuggingResponse | None
     ) -> None:
         if response is None or len(response["URLs"]) == 0:
             sublime.message_dialog("No debug session started")

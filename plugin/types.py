@@ -1,11 +1,11 @@
-from LSP.plugin.core.typing import TypedDict
-from LSP.plugin.core.typing import List
+from __future__ import annotations
 
+from typing import TypedDict
 
 GoplsStartDebuggingResponse = TypedDict(
     "GoplsStartDebuggingResponse",
     {
-        "URLs": List[str],
+        "URLs": list[str],
     },
     total=True,
 )

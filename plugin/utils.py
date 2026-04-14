@@ -1,16 +1,13 @@
-import sublime
+from __future__ import annotations
 
-import textwrap
 from shutil import which
+from typing import Any
 import subprocess
 import tempfile
+import textwrap
 
 from LSP.plugin import Session
-from LSP.plugin.core.typing import Optional
-from LSP.plugin.core.typing import Union
-from LSP.plugin.core.typing import List
-from LSP.plugin.core.typing import Any
-from LSP.plugin.core.typing import Tuple
+import sublime
 
 from .constants import SETTINGS
 
@@ -18,7 +15,7 @@ from .constants import SETTINGS
 def get_setting(
     session: Session,
     key: str,
-    default: Optional[Union[str, bool, List[str]]] = None,
+    default: str | bool | list[str] | None = None,
 ) -> Any:
     value = session.config.settings.get(key)
     if value is None:
@@ -33,8 +30,8 @@ def get_settings():
 def run_go_command(
     env_vars: dict,
     sub_command: str = "install",
-    url: Optional[str] = None,
-) -> Tuple[str, str, int]:
+    url: str | None = None,
+) -> tuple[str, str, int]:
     startupinfo = None
     if sublime.platform() == "windows":
         startupinfo = subprocess.STARTUPINFO()  # type: ignore
@@ -70,7 +67,7 @@ def reformat(text: str) -> str:
     return textwrap.dedent(text).strip()
 
 
-def to_int(value: Optional[str]) -> int:
+def to_int(value: str | None) -> int:
     if value is None:
         return 0
     return int(value)
