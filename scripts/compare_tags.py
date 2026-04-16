@@ -1,11 +1,11 @@
 from __future__ import annotations
 
+from typing import Literal
+from urllib.error import URLError
 import json
 import os
 import re
 import urllib.request
-from typing import Literal
-from urllib.error import URLError
 
 
 class VersionChecker:

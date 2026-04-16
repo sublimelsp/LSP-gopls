@@ -1,5 +1,6 @@
 [tool.pyright]
 pythonVersion = "3.8"
+typeCheckingMode = "standard"
 
 [tool.ruff]
 line-length = 120

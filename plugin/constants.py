@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import re
 
-PACKAGE_NAME = __package__.partition(".")[0]
+PACKAGE_NAME = str(__package__).partition(".")[0]
 SESSION_NAME = "gopls"
 SETTINGS = "LSP-gopls.sublime-settings"
 

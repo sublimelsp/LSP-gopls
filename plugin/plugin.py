@@ -11,6 +11,7 @@ from LSP.plugin import parse_uri
 import sublime
 
 from .constants import GOPLS_BASE_URL
+from .constants import PACKAGE_NAME
 from .constants import RE_VER
 from .constants import SESSION_NAME
 from .utils import get_setting
@@ -66,7 +67,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), __package__.split(".")[0])
+        return os.path.join(cls.storage_path(), PACKAGE_NAME)
 
     @classmethod
     def server_version(cls) -> str:
