@@ -304,8 +304,9 @@
       "vendor": true
     },
 
-    // (experimental) semanticTokens controls whether the LSP server will send
-    // semantic tokens to the client.
+    // (experimental) semanticTokens determines whether gopls will return a
+    // SemanticTokensProvider at initialization, or respond
+    // to request for semantic tokens.
     //
     "gopls.semanticTokens": false,
 
@@ -360,6 +361,27 @@
     // gofumpt indicates if we should run gofumpt formatting.
     //
     "gopls.gofumpt": false,
+
+    // (experimental) fileWatcher specifies the server-side file watching strategy used by gopls.
+    //
+    // By default, this is set to "off", meaning gopls relies exclusively on the
+    // language client (e.g., the editor) to send file change notifications.
+    //
+    // Available options:
+    //   - "off"      : Client-driven watching (default)
+    //   - "fsnotify" : OS-level event notifications
+    //   - "poll"     : Periodic directory scanning
+    //
+    "gopls.fileWatcher": "off",
+
+    // (experimental) maxFileCacheBytes sets a soft limit on the file cache size in bytes.
+    // If zero, the default budget is used.
+    //
+    // The cache may temporarily use more than this amount.
+    // Also, this parameter limits file contents; disk block usage
+    // as measured by du(1) may be significantly higher.
+    //
+    "gopls.maxFileCacheBytes": 0,
 
     // (debug) verboseOutput enables additional debug logging.
     //
