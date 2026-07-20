@@ -14,7 +14,7 @@ jobs:
       branch_name: ${{ steps.tagCompare.outputs.BRANCH_NAME }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - id: tagCompare
         name: Run script
         run: python3 ./scripts/compare_tags.py
@@ -25,10 +25,10 @@ jobs:
     if: needs.compareTag.outputs.requires_update == 1
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: actions/setup-go@v6
+      - uses: actions/setup-go@v7
         with:
           go-version: "1.26"
           check-latest: true
@@ -36,7 +36,7 @@ jobs:
       - name: Install GOPLS
         run: |
           go install golang.org/x/tools/gopls@v${{ needs.compareTag.outputs.latest_tag }}
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: '3.14'
       - name: Update VERSION
