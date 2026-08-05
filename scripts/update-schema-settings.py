@@ -79,6 +79,13 @@ TYPE_OVERRIDE_BY_KEY = {
     "gopls.linksInHover": ["string", "boolean"],
 }
 
+OMIT_KEYS = [
+    "gopls.memoryMode",
+    "gopls.staticcheckProvided",
+    "gopls.noSemanticString",
+    "gopls.noSemanticNumber"
+]
+
 # Custom LSP-gopls settings not provided by gopls directly
 CUSTOM_PROPERTIES = {
     "manageGoplsBinary": {
@@ -146,6 +153,9 @@ class GoplsGenerator:
         raw_settings = raw_schema["Options"]["User"]
         for value in raw_settings:
             current_key = f"gopls.{value['Name']}"
+            if current_key in OMIT_KEYS:
+                print('Omitting key', current_key)
+                continue
             if current_key in TYPE_OVERRIDE_BY_KEY:
                 current_type = TYPE_OVERRIDE_BY_KEY[current_key]
             else:
