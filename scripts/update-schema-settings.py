@@ -83,7 +83,10 @@ OMIT_KEYS = [
     "gopls.memoryMode",
     "gopls.staticcheckProvided",
     "gopls.noSemanticString",
-    "gopls.noSemanticNumber"
+    "gopls.noSemanticNumber",
+    "gopls.fileWatcher",
+    "gopls.maxFileCacheBytes",
+    "gopls.moveType"
 ]
 
 # Custom LSP-gopls settings not provided by gopls directly
