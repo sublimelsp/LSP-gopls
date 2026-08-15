@@ -93,12 +93,13 @@ class Gopls(LspPlugin):
         binary = "gopls.exe" if sublime.platform() == "windows" else "gopls"
         command = [os.path.join(cls.basedir(), "bin", binary)]
 
-        # TODO: swap `plugin_storage_path` with ST_STORAGE_PATH or not?
         gopls_binary = str(sublime.expand_variables(
-            command[0], {"storage_path": str(cls.plugin_storage_path)})
+            command[0], {"storage_path": cls.basedir()})
         )
+
         if sublime.platform() == "windows" and not gopls_binary.endswith(".exe"):
             gopls_binary = gopls_binary + ".exe"
+
         return is_binary_available(gopls_binary)
 
     @classmethod
