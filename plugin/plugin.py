@@ -5,20 +5,31 @@ from typing import Any
 from typing import Callable
 import os
 
-from LSP.plugin import AbstractPlugin
-from LSP.plugin import Session
-from LSP.plugin import parse_uri
+from LSP.plugin import (
+    ST_STORAGE_PATH,
+    LspPlugin,
+    Session,
+    parse_uri,
+    OnPreStartContext,
+    PluginStartError,
+    command_handler,
+    Promise
+)
 import sublime
 
-from .constants import GOPLS_BASE_URL
-from .constants import PACKAGE_NAME
-from .constants import RE_VER
-from .constants import SESSION_NAME
-from .utils import get_setting
-from .utils import get_settings
-from .utils import is_binary_available
-from .utils import run_go_command
-from .utils import to_int
+from .constants import (
+    GOPLS_BASE_URL,
+    PACKAGE_NAME,
+    RE_VER,
+    SESSION_NAME
+)
+from .utils import (
+    get_setting,
+    get_settings,
+    is_binary_available,
+    run_go_command,
+    to_int
+)
 from .version import VERSION
 
 try:
@@ -60,14 +71,10 @@ def open_tests_in_terminus(
         window.run_command("terminus_open", terminus_args)
 
 
-class Gopls(AbstractPlugin):
-    @classmethod
-    def name(cls):
-        return SESSION_NAME
-
+class Gopls(LspPlugin):
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), PACKAGE_NAME)
+        return os.path.join(ST_STORAGE_PATH, PACKAGE_NAME)
 
     @classmethod
     def server_version(cls) -> str:
@@ -86,8 +93,9 @@ class Gopls(AbstractPlugin):
         binary = "gopls.exe" if sublime.platform() == "windows" else "gopls"
         command = [os.path.join(cls.basedir(), "bin", binary)]
 
-        gopls_binary = sublime.expand_variables(
-            command[0], {"storage_path": cls.storage_path()}
+        # TODO: swap `plugin_storage_path` with ST_STORAGE_PATH or not?
+        gopls_binary = str(sublime.expand_variables(
+            command[0], {"storage_path": str(cls.plugin_storage_path)})
         )
         if sublime.platform() == "windows" and not gopls_binary.endswith(".exe"):
             gopls_binary = gopls_binary + ".exe"
@@ -127,33 +135,30 @@ class Gopls(AbstractPlugin):
         return env_vars
 
     @classmethod
-    def needs_update_or_installation(cls) -> bool:
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
         is_managed = get_settings().get("settings", {}).get("manageGoplsBinary", True)
-        if not is_managed:
-            return False
-        return not cls._is_gopls_installed() or (
-            cls.server_version() != cls.current_server_version()
-        )
+        if is_managed and (not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())):
+            if not cls._is_go_installed():
+                raise PluginStartError("go binary not found in $PATH")
 
-    @classmethod
-    def install_or_update(cls) -> None:
-        if not cls._is_go_installed():
-            raise ValueError("go binary not found in $PATH")
+            os.makedirs(cls.basedir(), exist_ok=True)
 
-        os.makedirs(cls.basedir(), exist_ok=True)
+            go_version = cls._get_go_version()
+            go_sub_command = "get" if go_version < (1, 16, 0) else "install"
+            _, stderr, return_code = run_go_command(
+                sub_command=go_sub_command,
+                url=GOPLS_BASE_URL.format(tag=VERSION),
+                env_vars=cls._set_env_vars(),
+            )
+            if return_code != 0:
+                raise PluginStartError(f"go installation error with return code {return_code}: {stderr}")
 
-        go_version = cls._get_go_version()
-        go_sub_command = "get" if go_version < (1, 16, 0) else "install"
-        _, stderr, return_code = run_go_command(
-            sub_command=go_sub_command,
-            url=GOPLS_BASE_URL.format(tag=VERSION),
-            env_vars=cls._set_env_vars(),
-        )
-        if return_code != 0:
-            raise ValueError("go installation error", stderr, "returncode", return_code)
+            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+                fp.write(cls.server_version())
 
-        with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
-            fp.write(cls.server_version())
+    @command_handler("gopls.test")
+    def on_gopls_test(self, arguments: list[Any] | None) -> Promise[None]:
+        return Promise.resolve(None)
 
     def on_pre_server_command(
         self, command: Mapping[str, Any], done_callback: Callable[[], None]
