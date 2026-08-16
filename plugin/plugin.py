@@ -5,31 +5,25 @@ from typing import Any
 from typing import Callable
 import os
 
-from LSP.plugin import (
-    ST_STORAGE_PATH,
-    LspPlugin,
-    Session,
-    parse_uri,
-    OnPreStartContext,
-    PluginStartError,
-    command_handler,
-    Promise
-)
+from LSP.plugin import LspPlugin
+from LSP.plugin import OnPreStartContext
+from LSP.plugin import PluginStartError
+from LSP.plugin import Promise
+from LSP.plugin import ST_STORAGE_PATH
+from LSP.plugin import Session
+from LSP.plugin import command_handler
+from LSP.plugin import parse_uri
 import sublime
 
-from .constants import (
-    GOPLS_BASE_URL,
-    PACKAGE_NAME,
-    RE_VER,
-    SESSION_NAME
-)
-from .utils import (
-    get_setting,
-    get_settings,
-    is_binary_available,
-    run_go_command,
-    to_int
-)
+from .constants import GOPLS_BASE_URL
+from .constants import PACKAGE_NAME
+from .constants import RE_VER
+from .constants import SESSION_NAME
+from .utils import get_setting
+from .utils import get_settings
+from .utils import is_binary_available
+from .utils import run_go_command
+from .utils import to_int
 from .version import VERSION
 
 try:
@@ -55,11 +49,7 @@ def open_tests_in_terminus(
     go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
     args = [go_test_directory]
     for test_command in arguments[1]:
-        command_to_run = (
-            ["go", "test"]
-            + args
-            + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
-        )
+        command_to_run = ["go", "test"] + args + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
         terminus_args = {
             "title": "Go Test",
             "cmd": command_to_run,
@@ -93,9 +83,7 @@ class Gopls(LspPlugin):
         binary = "gopls.exe" if sublime.platform() == "windows" else "gopls"
         command = [os.path.join(cls.basedir(), "bin", binary)]
 
-        gopls_binary = str(sublime.expand_variables(
-            command[0], {"storage_path": cls.basedir()})
-        )
+        gopls_binary = str(sublime.expand_variables(command[0], {"storage_path": cls.basedir()}))
 
         if sublime.platform() == "windows" and not gopls_binary.endswith(".exe"):
             gopls_binary = gopls_binary + ".exe"
@@ -108,9 +96,7 @@ class Gopls(LspPlugin):
 
     @classmethod
     def _get_go_version(cls) -> tuple[int, int, int]:
-        stdout, stderr, return_code = run_go_command(
-            sub_command="version", env_vars=cls._set_env_vars()
-        )
+        stdout, stderr, return_code = run_go_command(sub_command="version", env_vars=cls._set_env_vars())
         if return_code != 0:
             raise ValueError("go version error", stderr, "returncode", return_code)
 
@@ -161,9 +147,7 @@ class Gopls(LspPlugin):
     def on_gopls_test(self, arguments: list[Any] | None) -> Promise[None]:
         return Promise.resolve(None)
 
-    def on_pre_server_command(
-        self, command: Mapping[str, Any], done_callback: Callable[[], None]
-    ) -> bool:
+    def on_pre_server_command(self, command: Mapping[str, Any], done_callback: Callable[[], None]) -> bool:
         if not Terminus:
             return False
 
@@ -172,9 +156,7 @@ class Gopls(LspPlugin):
             if not (session := self.weaksession()):
                 return False
             try:
-                open_tests_in_terminus(
-                    session, sublime.active_window(), command["arguments"]
-                )
+                open_tests_in_terminus(session, sublime.active_window(), command["arguments"])
                 done_callback()
                 return True
             except Exception as ex:
