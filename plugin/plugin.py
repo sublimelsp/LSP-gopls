@@ -53,7 +53,6 @@ def open_tests_in_terminus(
     args = [go_test_directory]
     for test_command in arguments[0]["Tests"]:
         command_to_run = ["go", "test"] + args + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
-        print(command_to_run)
         terminus_args = {
             "title": "Go Test",
             "cmd": command_to_run,
