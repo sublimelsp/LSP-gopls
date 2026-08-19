@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 from typing import Callable
 import os
@@ -18,7 +19,7 @@ import sublime
 from .constants import GOPLS_BASE_URL
 from .constants import PACKAGE_NAME
 from .constants import RE_VER
-from .constants import SESSION_NAME
+from .types import GoplsRunTestsArgument
 from .utils import get_setting
 from .utils import get_settings
 from .utils import is_binary_available
@@ -35,21 +36,24 @@ except ImportError:
 def open_tests_in_terminus(
     session: Session,
     window: sublime.Window | None,
-    arguments: tuple[str, list[str], None],
+    arguments: list[GoplsRunTestsArgument],
 ) -> None:
     if not window:
         return
 
-    if len(arguments) < 2:
+    if (arguments[0]["Tests"] is None) or (not arguments[0]["Tests"]):
         return
 
     if not (view := window.active_view()):
         return
 
-    go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
+    uri = arguments[0]["URI"]
+    filepath = parse_uri(uri)
+    go_test_directory = str(Path(filepath[1]).parent)
     args = [go_test_directory]
-    for test_command in arguments[1]:
+    for test_command in arguments[0]["Tests"]:
         command_to_run = ["go", "test"] + args + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
+        print(command_to_run)
         terminus_args = {
             "title": "Go Test",
             "cmd": command_to_run,
@@ -143,22 +147,16 @@ class Gopls(LspPlugin):
             with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
                 fp.write(cls.server_version())
 
-    @command_handler("gopls.test")
-    def on_gopls_test(self, arguments: list[Any] | None) -> Promise[None]:
+    @command_handler("gopls.run_tests")
+    def on_gopls_run_tests(self, arguments: list[GoplsRunTestsArgument] | None) -> Promise[None]:
+        if not Terminus or not arguments:
+            return Promise.resolve(None)
+
+        if not (session := self.weaksession()):
+            return Promise.resolve(None)
+        try:
+            return Promise.resolve(open_tests_in_terminus(session, sublime.active_window(), arguments))
+        except Exception as ex:
+            print("Exception handling `gopls.run_tests` {}: {}".format(ex))
+
         return Promise.resolve(None)
-
-    def on_pre_server_command(self, command: Mapping[str, Any], done_callback: Callable[[], None]) -> bool:
-        if not Terminus:
-            return False
-
-        command_name = command["command"]
-        if command_name in ("gopls.test"):
-            if not (session := self.weaksession()):
-                return False
-            try:
-                open_tests_in_terminus(session, sublime.active_window(), command["arguments"])
-                done_callback()
-                return True
-            except Exception as ex:
-                print("Exception handling command {}: {}".format(command_name, ex))
-        return False
