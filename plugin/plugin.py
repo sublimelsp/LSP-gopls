@@ -122,7 +122,7 @@ class Gopls(LspPlugin):
 
     @classmethod
     def on_pre_start_async(cls, context: OnPreStartContext) -> None:
-        is_managed = context.configuration.settings.get('manageGoplsBinary', True)
+        is_managed = context.configuration.settings.get("manageGoplsBinary", True)
         if is_managed and (not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())):
             if not cls._is_go_installed():
                 raise PluginStartError("go binary not found in $PATH")
