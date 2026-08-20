@@ -5,12 +5,11 @@ from LSP.plugin import Request
 import sublime
 import sublime_plugin
 
-from .constants import SESSION_NAME
 from .types import GoplsStartDebuggingResponse
 
 
 class GoplsCommand(LspTextCommand):
-    session_name = SESSION_NAME
+    pass
 
 
 class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
