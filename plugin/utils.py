@@ -23,10 +23,6 @@ def get_setting(
     return value
 
 
-def get_settings():
-    return sublime.load_settings(SETTINGS)
-
-
 def run_go_command(
     env_vars: dict,
     sub_command: str = "install",

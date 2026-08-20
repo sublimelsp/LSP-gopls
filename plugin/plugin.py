@@ -18,7 +18,6 @@ from .constants import PACKAGE_NAME
 from .constants import RE_VER
 from .types import GoplsRunTestsArgument
 from .utils import get_setting
-from .utils import get_settings
 from .utils import is_binary_available
 from .utils import run_go_command
 from .utils import to_int
@@ -123,7 +122,7 @@ class Gopls(LspPlugin):
 
     @classmethod
     def on_pre_start_async(cls, context: OnPreStartContext) -> None:
-        is_managed = get_settings().get("settings", {}).get("manageGoplsBinary", True)
+        is_managed = context.configuration.settings.get('manageGoplsBinary', True)
         if is_managed and (not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())):
             if not cls._is_go_installed():
                 raise PluginStartError("go binary not found in $PATH")
