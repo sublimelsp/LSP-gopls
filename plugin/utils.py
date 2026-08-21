@@ -9,8 +9,6 @@ import textwrap
 from LSP.plugin import Session
 import sublime
 
-from .constants import SETTINGS
-
 
 def get_setting(
     session: Session,
@@ -21,10 +19,6 @@ def get_setting(
     if value is None:
         return default
     return value
-
-
-def get_settings():
-    return sublime.load_settings(SETTINGS)
 
 
 def run_go_command(

@@ -1,21 +1,23 @@
 from __future__ import annotations
 
-from collections.abc import Mapping
-from typing import Any
-from typing import Callable
+from pathlib import Path
 import os
 
-from LSP.plugin import AbstractPlugin
+from LSP.plugin import LspPlugin
+from LSP.plugin import OnPreStartContext
+from LSP.plugin import PluginStartError
+from LSP.plugin import Promise
+from LSP.plugin import ST_STORAGE_PATH
 from LSP.plugin import Session
+from LSP.plugin import command_handler
 from LSP.plugin import parse_uri
 import sublime
 
 from .constants import GOPLS_BASE_URL
 from .constants import PACKAGE_NAME
 from .constants import RE_VER
-from .constants import SESSION_NAME
+from .types import GoplsRunTestsArgument
 from .utils import get_setting
-from .utils import get_settings
 from .utils import is_binary_available
 from .utils import run_go_command
 from .utils import to_int
@@ -30,25 +32,23 @@ except ImportError:
 def open_tests_in_terminus(
     session: Session,
     window: sublime.Window | None,
-    arguments: tuple[str, list[str], None],
+    arguments: list[GoplsRunTestsArgument],
 ) -> None:
     if not window:
         return
 
-    if len(arguments) < 2:
+    if (arguments[0]["Tests"] is None) or (not arguments[0]["Tests"]):
         return
 
     if not (view := window.active_view()):
         return
 
-    go_test_directory = os.path.dirname(parse_uri(arguments[0])[1])
+    uri = arguments[0]["URI"]
+    filepath = parse_uri(uri)
+    go_test_directory = str(Path(filepath[1]).parent)
     args = [go_test_directory]
-    for test_command in arguments[1]:
-        command_to_run = (
-            ["go", "test"]
-            + args
-            + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
-        )
+    for test_command in arguments[0]["Tests"]:
+        command_to_run = ["go", "test"] + args + ["-v", "-count=1", "-run", "^{0}\\$".format(test_command)]
         terminus_args = {
             "title": "Go Test",
             "cmd": command_to_run,
@@ -60,14 +60,10 @@ def open_tests_in_terminus(
         window.run_command("terminus_open", terminus_args)
 
 
-class Gopls(AbstractPlugin):
-    @classmethod
-    def name(cls):
-        return SESSION_NAME
-
+class Gopls(LspPlugin):
     @classmethod
     def basedir(cls) -> str:
-        return os.path.join(cls.storage_path(), PACKAGE_NAME)
+        return os.path.join(ST_STORAGE_PATH, PACKAGE_NAME)
 
     @classmethod
     def server_version(cls) -> str:
@@ -86,11 +82,11 @@ class Gopls(AbstractPlugin):
         binary = "gopls.exe" if sublime.platform() == "windows" else "gopls"
         command = [os.path.join(cls.basedir(), "bin", binary)]
 
-        gopls_binary = sublime.expand_variables(
-            command[0], {"storage_path": cls.storage_path()}
-        )
+        gopls_binary = str(sublime.expand_variables(command[0], {"storage_path": cls.basedir()}))
+
         if sublime.platform() == "windows" and not gopls_binary.endswith(".exe"):
             gopls_binary = gopls_binary + ".exe"
+
         return is_binary_available(gopls_binary)
 
     @classmethod
@@ -99,9 +95,7 @@ class Gopls(AbstractPlugin):
 
     @classmethod
     def _get_go_version(cls) -> tuple[int, int, int]:
-        stdout, stderr, return_code = run_go_command(
-            sub_command="version", env_vars=cls._set_env_vars()
-        )
+        stdout, stderr, return_code = run_go_command(sub_command="version", env_vars=cls._set_env_vars())
         if return_code != 0:
             raise ValueError("go version error", stderr, "returncode", return_code)
 
@@ -127,50 +121,37 @@ class Gopls(AbstractPlugin):
         return env_vars
 
     @classmethod
-    def needs_update_or_installation(cls) -> bool:
-        is_managed = get_settings().get("settings", {}).get("manageGoplsBinary", True)
-        if not is_managed:
-            return False
-        return not cls._is_gopls_installed() or (
-            cls.server_version() != cls.current_server_version()
-        )
+    def on_pre_start_async(cls, context: OnPreStartContext) -> None:
+        is_managed = context.configuration.settings.get("manageGoplsBinary", True)
+        if is_managed and (not cls._is_gopls_installed() or (cls.server_version() != cls.current_server_version())):
+            if not cls._is_go_installed():
+                raise PluginStartError("go binary not found in $PATH")
 
-    @classmethod
-    def install_or_update(cls) -> None:
-        if not cls._is_go_installed():
-            raise ValueError("go binary not found in $PATH")
+            os.makedirs(cls.basedir(), exist_ok=True)
 
-        os.makedirs(cls.basedir(), exist_ok=True)
+            go_version = cls._get_go_version()
+            go_sub_command = "get" if go_version < (1, 16, 0) else "install"
+            _, stderr, return_code = run_go_command(
+                sub_command=go_sub_command,
+                url=GOPLS_BASE_URL.format(tag=VERSION),
+                env_vars=cls._set_env_vars(),
+            )
+            if return_code != 0:
+                raise PluginStartError(f"go installation error with return code {return_code}: {stderr}")
 
-        go_version = cls._get_go_version()
-        go_sub_command = "get" if go_version < (1, 16, 0) else "install"
-        _, stderr, return_code = run_go_command(
-            sub_command=go_sub_command,
-            url=GOPLS_BASE_URL.format(tag=VERSION),
-            env_vars=cls._set_env_vars(),
-        )
-        if return_code != 0:
-            raise ValueError("go installation error", stderr, "returncode", return_code)
+            with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
+                fp.write(cls.server_version())
 
-        with open(os.path.join(cls.basedir(), "VERSION"), "w") as fp:
-            fp.write(cls.server_version())
+    @command_handler("gopls.run_tests")
+    def on_gopls_run_tests(self, arguments: list[GoplsRunTestsArgument] | None) -> Promise[None]:
+        if not Terminus or not arguments:
+            return Promise.resolve(None)
 
-    def on_pre_server_command(
-        self, command: Mapping[str, Any], done_callback: Callable[[], None]
-    ) -> bool:
-        if not Terminus:
-            return False
+        if not (session := self.weaksession()):
+            return Promise.resolve(None)
+        try:
+            return Promise.resolve(open_tests_in_terminus(session, sublime.active_window(), arguments))
+        except Exception as ex:
+            print("Exception handling `gopls.run_tests` {}: {}".format(ex))
 
-        command_name = command["command"]
-        if command_name in ("gopls.test"):
-            if not (session := self.weaksession()):
-                return False
-            try:
-                open_tests_in_terminus(
-                    session, sublime.active_window(), command["arguments"]
-                )
-                done_callback()
-                return True
-            except Exception as ex:
-                print("Exception handling command {}: {}".format(command_name, ex))
-        return False
+        return Promise.resolve(None)
