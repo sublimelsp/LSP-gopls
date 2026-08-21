@@ -3,21 +3,11 @@ from __future__ import annotations
 from LSP.plugin import LspTextCommand
 from LSP.plugin import Request
 import sublime
-import sublime_plugin
 
 from .types import GoplsStartDebuggingResponse
 
 
-class GoplsCommand(LspTextCommand):
-    pass
-
-
-class GoplsOpenFileCommand(sublime_plugin.WindowCommand):
-    def run(self, uri: str) -> None:
-        self.window.open_file(uri, sublime.ENCODED_POSITION)
-
-
-class GoplsStartDebuggingCommand(GoplsCommand):
+class GoplsStartDebuggingCommand(LspTextCommand):
     """
     The GoplsStartDebuggingCommand class is a subclass of GoplsCommand and is
     responsible for starting a debug session for the current Go language server

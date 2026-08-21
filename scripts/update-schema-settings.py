@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from pathlib import Path
 import json
 import os
 import subprocess
@@ -230,12 +231,10 @@ class GoplsGenerator:
         return self.gopls_settings
 
     def write_schema_out(self, path: str):
-        with open(path, "w") as outfile:
-            outfile.write(json.dumps(self.schema, indent=2) + "\n")
+        Path(path).write_text(json.dumps(self.schema, indent=2) + "\n")
 
     def write_settings_out(self, path: str):
-        with open(path, "w") as outfile:
-            outfile.write(self.gopls_settings)
+        Path(path).write_text(self.gopls_settings)
 
 
 def main():

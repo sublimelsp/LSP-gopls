@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Literal
 from urllib.error import URLError
 import json
@@ -42,12 +43,12 @@ class VersionChecker:
 
     def get_version_locally(self) -> str:
         try:
-            with open("plugin/version.py", "r") as f:
-                groups = re.search(r"\d+\.\d+\.\d+", f.read())
-                if groups is None:
-                    raise ValueError("Could not find version in plugin/version.py.")
-                return groups.group(0)
-        except (IOError, ValueError) as e:
+            content = Path("plugin/version.py").read_text()
+            groups = re.search(r"\d+\.\d+\.\d+", content)
+            if groups is None:
+                raise ValueError("Could not find version in plugin/version.py.")
+            return groups.group(0)
+        except (OSError, ValueError) as e:
             print(f"Error while reading plugin/version.py: {e}")
             exit(1)
 
@@ -71,7 +72,7 @@ class VersionChecker:
         local_version = self.get_version_locally()
         if prelease:
             with open(os.environ["GITHUB_OUTPUT"], "a") as fh:
-                print(f"REQUIRES_UPDATE=0", file=fh)
+                print("REQUIRES_UPDATE=0", file=fh)
                 print(f"LATEST_VERSION={latest_version}", file=fh)
             return
 
