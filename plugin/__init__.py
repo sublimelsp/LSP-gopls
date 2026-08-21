@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from .commands import GoplsOpenFileCommand
 from .commands import GoplsStartDebuggingCommand
 from .plugin import Gopls
 
@@ -9,7 +8,6 @@ __all__ = (
     "plugin_loaded",
     "plugin_unloaded",
     # ST: commands
-    "GoplsOpenFileCommand",
     "GoplsStartDebuggingCommand",
 )
 
