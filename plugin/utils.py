@@ -4,7 +4,6 @@ from shutil import which
 from typing import Any
 import subprocess
 import tempfile
-import textwrap
 
 from LSP.plugin import Session
 import sublime
@@ -55,10 +54,6 @@ def run_go_command(
 
 def is_binary_available(path) -> bool:
     return bool(which(path))
-
-
-def reformat(text: str) -> str:
-    return textwrap.dedent(text).strip()
 
 
 def to_int(value: str | None) -> int:

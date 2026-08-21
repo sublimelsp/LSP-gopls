@@ -9,7 +9,7 @@ target-version = "py38"
 [tool.ruff.lint]
 # Enable preview rules.
 preview = true
-select = ["F401", "I"]
+select = ["E", "F", "W", "I", "UP", "FURB", "SIM"]
 
 [tool.ruff.lint.isort]
 case-sensitive = true

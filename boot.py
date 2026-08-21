@@ -4,7 +4,7 @@ from __future__ import annotations
 def reload_plugin() -> None:
     import sys
 
-    prefix = "{}.".format(__package__)
+    prefix = f"{__package__}."
 
     for module_name in tuple(
         filter(lambda m: m.startswith(prefix) and m != __name__, sys.modules)
