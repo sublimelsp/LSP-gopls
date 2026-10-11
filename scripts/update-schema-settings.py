@@ -48,7 +48,7 @@ SCHEMA_TEMPLATE = {
                             "properties": {
                                 "LSP": {
                                     "properties": {
-                                        "gopls": {
+                                        "LSP-gopls": {
                                             "$ref": "sublime://settings/LSP-gopls#/definitions/PluginConfig"
                                         },
                                     },
