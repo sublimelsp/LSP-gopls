@@ -21,6 +21,27 @@ LSP-gopls implements the ability for results from Go Tests to be output into a p
 
 Open configuration file using command palette with `Preferences: LSP-gopls Settings` command or opening it from the Sublime menu (`Preferences > Package Settings > LSP > Servers > LSP-gopls`).
 
+Settings can also be overridden per project in the `.sublime-project` file, under the `LSP-gopls` key:
+
+```jsonc
+{
+    "settings": {
+        "LSP": {
+            "LSP-gopls": {
+                "settings": {
+                    "gopls.env": {
+                        "GOFLAGS": "-tags=integration"
+                    }
+                }
+            }
+        }
+    }
+}
+```
+
+> [!NOTE]
+> Older versions of this package (and some external guides) use `gopls` as the key. Those project settings are ignored now; rename the key to `LSP-gopls`.
+
 ## Settings
 
 Configure the default Go language server ('gopls'). In most cases, configuring this section is unnecessary. See [the documentation][gopls-settings] for all available settings.
