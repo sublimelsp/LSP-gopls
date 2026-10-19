@@ -27,3 +27,18 @@ jobs:
           go-version: stable
 
       - uses: sublimelsp/lsp_smoke_test@v1
+
+  # A single check whose name doesn't depend on the os matrix, for rulesets to require. It runs even when the workflow
+  # is cancelled: a skipped job counts as passing for a required check.
+  result:
+    name: Smoke test result
+    needs: smoke
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check smoke test result
+        env:
+          RESULT: ${{ needs.smoke.result }}
+        run: |
+          echo "Smoke test result: $RESULT"
+          test "$RESULT" = success
