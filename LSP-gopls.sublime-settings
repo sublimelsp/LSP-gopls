@@ -188,7 +188,7 @@
     // analyses specify analyses that the user would like to enable or disable.
     // A map of the names of analysis passes that should be enabled/disabled.
     // A full list of analyzers that gopls uses can be found in
-    // [analyzers.md](https://github.com/golang/tools/blob/master/gopls/doc/analyzers.md).
+    // [analyzers](https://go.dev/gopls/analyzers).
     //
     // Example Usage:
     //
@@ -268,8 +268,7 @@
     "gopls.analysisProgressReporting": true,
 
     // (experimental) hints specify inlay hints that users want to see. A full list of hints
-    // that gopls uses can be found in
-    // [inlayHints.md](https://github.com/golang/tools/blob/master/gopls/doc/inlayHints.md).
+    // that gopls uses can be found in [inlayHints](https://go.dev/gopls/inlayHints).
     //
     "gopls.hints": {},
 
@@ -293,7 +292,6 @@
       "regenerate_cgo": true,
       "run_govulncheck": true,
       "tidy": true,
-      "test": true,
       "upgrade_dependency": true,
       "vendor": true
     },
@@ -337,6 +335,11 @@
     //
     "gopls.renameMovesSubpackages": false,
 
+    // (experimental) moveDeclaration enables producing Move Declaration codeactions. The implementation
+    // is unfinished so we use this setting to gate its use.
+    //
+    "gopls.moveDeclaration": false,
+
     // local is the equivalent of the `goimports -local` flag, which puts
     // imports beginning with this string after third-party packages. It should
     // be the prefix of the import path whose imports should be grouped
@@ -352,6 +355,26 @@
     // gofumpt indicates if we should run gofumpt formatting.
     //
     "gopls.gofumpt": false,
+
+    // (experimental) memoryLimit sets a soft memory limit (in bytes) for the gopls process, via
+    // runtime/debug.SetMemoryLimit. If non-positive (the default), no limit is set.
+    //
+    // On large workspaces, a single edit that invalidates many
+    // packages (for example a syntax error in a widely-imported
+    // package) can make the heap briefly grow well above the
+    // steady-state working set before the garbage collector
+    // catches up, spiking memory and, on memory-constrained
+    // machines, causing swapping. A soft limit makes the GC work
+    // harder to stay near the limit, trading some CPU for a lower
+    // memory peak.
+    //
+    // The limit is soft and may be exceeded. Set it comfortably above the
+    // steady-state working set, as too low a value causes excessive GC.
+    //
+    // Unlike the GOMEMLIMIT environment variable, this setting is
+    // strictly numeric; SI suffixes are not permitted.
+    //
+    "gopls.memoryLimit": 0,
 
     // (debug) verboseOutput enables additional debug logging.
     //
