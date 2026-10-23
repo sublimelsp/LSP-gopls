@@ -2,5 +2,21 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>sublimelsp/renovate-preset"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The gopls version that the plugin installs",
+      "managerFilePatterns": [
+        "/^plugin/version\\.py$/"
+      ],
+      "matchStrings": [
+        "VERSION = '(?<currentValue>.+?)'"
+      ],
+      "depNameTemplate": "gopls",
+      "packageNameTemplate": "golang.org/x/tools/gopls",
+      "datasourceTemplate": "go",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
   ]
 }

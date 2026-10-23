@@ -4,10 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 import json
-import os
 import subprocess
 
-PACKAGE_PATH = os.path.join(os.path.dirname(__file__), "..")
+PACKAGE_PATH = Path(__file__).parent.parent
 
 SCHEMA_TEMPLATE = {
     "contributions": {
@@ -107,6 +106,12 @@ CUSTOM_PROPERTIES = {
         "markdownDescription": "Controls if the test results output to a panel instead of a tab.",
         "type": "boolean",
     },
+}
+
+# Defaults in LSP-gopls.sublime-settings that differ from the gopls defaults, merged into them.
+SETTINGS_DEFAULT_OVERRIDES = {
+    # LSP-gopls implements the gopls.test command that this code lens runs.
+    "gopls.codelenses": {"test": True},
 }
 
 BEGIN_LSP_GOPLS_SETTINGS = """// Packages/User/LSP-gopls.sublime-settings
@@ -217,7 +222,10 @@ class GoplsGenerator:
                     for line in properties[prop]["markdownDescription"].split("\n")
                 ]
             )
-            defaults = json.dumps(properties[prop]["default"], indent=2)
+            default = properties[prop]["default"]
+            if prop in SETTINGS_DEFAULT_OVERRIDES:
+                default = dict(sorted({**default, **SETTINGS_DEFAULT_OVERRIDES[prop]}.items()))
+            defaults = json.dumps(default, indent=2)
             defaults = "\n".join(
                 [f"{PREFIX_LSP_GOPLS_SETTINGS}{line}" for line in defaults.split("\n")]
             )
@@ -230,11 +238,11 @@ class GoplsGenerator:
         )
         return self.gopls_settings
 
-    def write_schema_out(self, path: str):
-        Path(path).write_text(json.dumps(self.schema, indent=2) + "\n")
+    def write_schema_out(self, path: Path):
+        path.write_text(json.dumps(self.schema, indent=2) + "\n")
 
-    def write_settings_out(self, path: str):
-        Path(path).write_text(self.gopls_settings)
+    def write_settings_out(self, path: Path):
+        path.write_text(self.gopls_settings)
 
 
 def main():
@@ -243,15 +251,13 @@ def main():
     if sublime_package_schema is None:
         return
 
-    processor.write_schema_out(os.path.join(PACKAGE_PATH, "sublime-package.json"))
+    processor.write_schema_out(PACKAGE_PATH / "sublime-package.json")
 
     settings = processor.generate_lsp_settings()
     if settings == "":
         return None
 
-    processor.write_settings_out(
-        os.path.join(PACKAGE_PATH, "LSP-gopls.sublime-settings")
-    )
+    processor.write_settings_out(PACKAGE_PATH / "LSP-gopls.sublime-settings")
 
 
 main()
