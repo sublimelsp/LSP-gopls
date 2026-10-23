@@ -1,0 +1,129 @@
+name: Update settings
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'plugin/version.py'
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: settings-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  update_settings:
+    name: Update settings
+    # The settings PR is stacked on top of the PR, so its base is not main and this workflow doesn't run for it.
+    if: ${{ !startsWith(github.head_ref, 'settings/') }}
+    runs-on: ubuntu-latest
+    env:
+      # PRs from forks get a read-only token and no secrets, so the settings PR and the comment are skipped for them.
+      IS_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_BRANCH: ${{ github.head_ref }}
+      SETTINGS_BRANCH: settings/${{ github.head_ref }}
+
+    steps:
+      # Pushes and PRs made with GITHUB_TOKEN don't trigger workflows, so the settings PR wouldn't get CI.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        if: env.IS_FORK == 'false'
+        with:
+          client-id: ${{ vars.SUBLIMELSP_APP_CLIENT_ID }}
+          private-key: ${{ secrets.SUBLIMELSP_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          token: ${{ steps.app-token.outputs.token || github.token }}
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: stable
+          cache: false
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.15'
+
+      - name: Install gopls
+        run: |
+          version=$(sed -n "s/^VERSION = '\(.*\)'$/\1/p" plugin/version.py)
+          go install "golang.org/x/tools/gopls@v$version"
+
+      - name: Update settings
+        id: update-settings
+        run: |
+          python scripts/update-schema-settings.py
+          git diff --stat | tee -a "$GITHUB_STEP_SUMMARY"
+          if git diff --quiet; then echo 'changed=false'; else echo 'changed=true'; fi >> "$GITHUB_OUTPUT"
+
+      - name: Create or update settings PR
+        id: settings-pr
+        if: env.IS_FORK == 'false' && steps.update-settings.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email 'github-actions[bot]@users.noreply.github.com'
+          git commit -am 'chore: update settings'
+          git push --force origin "HEAD:refs/heads/$SETTINGS_BRANCH"
+          cat > "$RUNNER_TEMP/body.md" <<EOF
+          Changes to \`sublime-package.json\` and \`LSP-gopls.sublime-settings\` for #$PR_NUMBER, generated from \`gopls api-json\`. Review them, then merge this PR before #$PR_NUMBER.
+
+          This branch is regenerated when #$PR_NUMBER is updated, which overwrites any changes pushed to it.
+          EOF
+          number=$(gh pr list --head "$SETTINGS_BRANCH" --base "$PR_BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh pr edit "$number" --body-file "$RUNNER_TEMP/body.md"
+          else
+            url=$(gh pr create --head "$SETTINGS_BRANCH" --base "$PR_BRANCH" --title "chore: update settings for #$PR_NUMBER" --body-file "$RUNNER_TEMP/body.md")
+            number=${url##*/}
+          fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      - name: Close stale settings PR
+        if: env.IS_FORK == 'false' && steps.update-settings.outputs.changed == 'false'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          number=$(gh pr list --head "$SETTINGS_BRANCH" --base "$PR_BRANCH" --state open --json number --jq '.[0].number')
+          if [ -n "$number" ]; then
+            gh pr close "$number" --delete-branch --comment "No settings changes needed anymore for #$PR_NUMBER."
+          fi
+
+      - name: Find Comment
+        uses: peter-evans/find-comment@v4
+        id: find-comment
+        if: env.IS_FORK == 'false'
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+
+      - name: Create or update comment
+        uses: peter-evans/create-or-update-comment@v5
+        if: env.IS_FORK == 'false'
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ${{ steps.settings-pr.outputs.number && format('Settings changes are in #{0}. Review and merge it before merging this PR.', steps.settings-pr.outputs.number) || 'No changes to the settings.' }}
+          edit-mode: replace
+
+      # So that this PR can't be merged before the settings are updated.
+      - name: Fail if the settings need review
+        if: steps.update-settings.outputs.changed == 'true'
+        run: |
+          if [ "$IS_FORK" = 'true' ]; then
+            echo "::error::The settings need to be updated. Run scripts/update-schema-settings.py with the new gopls version."
+          else
+            echo "::error::The settings need review, see the PR comment."
+          fi
+          exit 1

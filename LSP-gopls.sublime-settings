@@ -292,8 +292,8 @@
       "generate": true,
       "regenerate_cgo": true,
       "run_govulncheck": true,
-      "tidy": true,
       "test": true,
+      "tidy": true,
       "upgrade_dependency": true,
       "vendor": true
     },

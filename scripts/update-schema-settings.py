@@ -109,6 +109,12 @@ CUSTOM_PROPERTIES = {
     },
 }
 
+# Defaults in LSP-gopls.sublime-settings that differ from the gopls defaults, merged into them.
+SETTINGS_DEFAULT_OVERRIDES = {
+    # LSP-gopls implements the gopls.test command that this code lens runs.
+    "gopls.codelenses": {"test": True},
+}
+
 BEGIN_LSP_GOPLS_SETTINGS = """// Packages/User/LSP-gopls.sublime-settings
 {
   "command": [
@@ -217,7 +223,10 @@ class GoplsGenerator:
                     for line in properties[prop]["markdownDescription"].split("\n")
                 ]
             )
-            defaults = json.dumps(properties[prop]["default"], indent=2)
+            default = properties[prop]["default"]
+            if prop in SETTINGS_DEFAULT_OVERRIDES:
+                default = dict(sorted({**default, **SETTINGS_DEFAULT_OVERRIDES[prop]}.items()))
+            defaults = json.dumps(default, indent=2)
             defaults = "\n".join(
                 [f"{PREFIX_LSP_GOPLS_SETTINGS}{line}" for line in defaults.split("\n")]
             )
