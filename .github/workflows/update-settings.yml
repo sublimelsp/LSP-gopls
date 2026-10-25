@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - main
-    paths:
-      - 'plugin/version.py'
 
 permissions:
   contents: read
